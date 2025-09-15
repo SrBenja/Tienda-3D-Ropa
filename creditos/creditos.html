@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Créditos</title>
+
+  <style>
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:#000;}
+    a{color:inherit;text-decoration:none}
+
+    /* Reducir las animaciones si el usuario solicita movimiento reducido */
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+
+    .bg-video { position:fixed; inset:0; overflow:hidden; z-index:0; background:#000; }
+    .bg-video video {
+      position:absolute; top:50%; left:50%;
+      width:auto; height:120%; min-width:100%; min-height:100%;
+      transform:translate(-50%,-50%); object-fit:cover;
+      filter: brightness(1.06) saturate(1.03) contrast(1.02);
+      display:block;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .35s ease, visibility .35s ease, transform .6s ease;
+      will-change: opacity, transform;
+    }
+    .video-active .bg-video video { visibility: visible; opacity: 1; }
+    .video-active .page { background: linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0.12)); }
+
+    .page {
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:18px;
+      padding:24px;
+      box-sizing:border-box;
+      color:#fff; text-align:center;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.12), rgba(0,0,0,0.25));
+      position:relative; z-index:2;
+      transition: background .3s ease;
+    }
+
+    nav { position:fixed; top:8px; right:12px; z-index:60; }
+    nav ul{list-style:none;margin:0;padding:0;display:flex}
+    nav a {
+      display:inline-block;padding:8px 12px;border-radius:8px;
+      background:rgba(255,255,255,0.06); color:#fff; font-weight:600;
+      font-size:1.08rem; transition:background .18s;
+    }
+
+    main { width:100%; max-width:1000px; margin-top:64px; padding:20px; box-sizing:border-box; }
+    h1{ margin:0 0 8px 0; font-size:2.1rem; }
+    p.lead{ margin:0 0 18px 0; color:rgba(255,255,255,0.92); max-width:70ch; margin-left:auto;margin-right:auto;}
+
+    .text-toggle.hidden {
+      opacity: 0;
+      transform: translateY(6px);
+      height: 0;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      pointer-events: none;
+      transition: opacity .28s ease, transform .28s ease, height .28s ease;
+    }
+    .text-toggle.visible {
+      opacity: 1;
+      transform: translateY(0);
+      height: auto;
+      pointer-events: auto;
+      transition: opacity .28s ease, transform .28s ease, height .28s ease;
+    }
+
+    .credits {
+      background: rgba(0,0,0,0.45); padding:18px; border-radius:12px;
+      color:#fff; box-shadow: 0 8px 30px rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+      transition: opacity .28s ease, transform .28s ease, height .28s ease, padding .28s ease;
+    }
+    .credits.hidden { opacity: 0; transform: translateY(8px); height: 0; overflow: hidden; padding-top:0; padding-bottom:0; pointer-events: none; }
+    .credits.visible { opacity: 1; transform: translateY(0); pointer-events: auto; padding: 18px; height: auto; }
+
+    .credits ul{ text-align:left; margin:0; padding-left:20px; }
+    .credits a { color: #ffd86b; text-decoration:underline; }
+
+    .audio-control { position:fixed; right:18px; bottom:18px; z-index:50; display:flex; gap:8px; align-items:center; }
+    .audio-btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 12px; border-radius:999px; background: rgba(0,0,0,0.5);
+      color:#fff; border:1px solid rgba(255,255,255,0.06); cursor:pointer;
+      font-weight:700; box-shadow:0 6px 18px rgba(0,0,0,0.45); user-select:none; font-size:0.95rem;
+    }
+    .audio-btn[aria-pressed="true"] { background:#ffd86b; color:#000; border-color: rgba(0,0,0,0.12); }
+    .audio-icon { font-size:16px; display:inline-block; width:20px; text-align:center; }
+
+    /* Overlay play: más alargado, menos alto, algo simple */
+    #creditos-play-overlay .creditos-play {
+      width:86px;
+      height:34px;
+      padding:0;
+      border-radius:8px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background: linear-gradient(180deg,#ffd86b,#f0a500);
+      color:#000;
+      border: none;
+      box-shadow: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #creditos-play-overlay .creditos-play:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,0,0,0.25); }
+    #creditos-play-overlay .creditos-play svg { width:16px; height:16px; display:block; }
+
+    /* BURBUJA TEXTO: apariencia transparente */
+    .chat-bubble {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      z-index: 70;
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .12s ease, background .18s ease;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .chat-bubble:hover { transform: translateY(-3px); background: rgba(255,255,255,0.10); }
+    .chat-bubble:focus { outline: 3px solid rgba(255,255,255,0.12); outline-offset: 3px; }
+    .chat-bubble svg { width:22px; height:22px; color:#fff; display:block; }
+
+    .chat-tooltip {
+      position: fixed;
+      left: 18px;
+      bottom: 86px;
+      z-index: 71;
+      max-width: 300px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.78);
+      color: #fff;
+      font-size: 0.95rem;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .45s ease, transform .45s ease;
+      pointer-events: none;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.45);
+    }
+    .chat-tooltip.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    @media (max-width:640px) {
+      #creditos-play-overlay .creditos-play { width:72px; height:36px; }
+      nav a{ font-size: 1rem; padding:7px 10px; }
+      .chat-tooltip { left: 12px; bottom: 82px; max-width: 200px; font-size:0.92rem; }
+      .chat-bubble{ width:50px; height:50px; left:12px; bottom:12px;}
+      main { margin-top:72px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-video" aria-hidden="true">
+    <video id="bg-video" muted playsinline preload="auto">
+      <source id="bg-source" src="vid.mp4" type="video/mp4">
+      Tu navegador no soporta video.
+    </video>
+  </div>
+
+  <div class="page" role="main">
+    <nav aria-label="Navegación">
+      <ul>
+        <li><a href="../index.html">Inicio</a></li>
+      </ul>
+    </nav>
+
+    <main>
+      <!-- título y lead ocultos por defecto -->
+      <h1 id="page-title" class="text-toggle hidden">Créditos</h1>
+      <p id="page-lead" class="lead text-toggle hidden">Gracias por visitar. Aquí se muestra la información del proyecto.</p>
+
+      <!-- créditos: ocultos por defecto -->
+      <section id="credits-section" class="credits hidden" aria-labelledby="credits-title" aria-hidden="true">
+        <h2 id="credits-title" style="margin-top:0">Información</h2>
+        <ul>
+          <li>Desarrollador: <strong>Benjamín</strong>.</li>
+          <li>Código fuente: <a href="https://github.com/SrBenja/Tienda-3D-Ropa" target="_blank" rel="noopener noreferrer" aria-label="Ver código en GitHub — Tienda 3D Ropa">Ver en GitHub
+    <!-- icono GitHub inline (aria-hidden para que lectores de pantalla usen el aria-label) -->
+    <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 16 16" style="vertical-align:middle; margin-right:6px;">
+      <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82A7.6 7.6 0 0 1 8 3.3c.68.003 1.36.092 2 .27 1.52-1.04 2.19-.82 2.19-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.19 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+  </a>
+</li>
+
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <audio id="bg-audio" src="Chilis theme.mp3" preload="auto" ></audio>
+
+  <div class="audio-control" id="audio-control" aria-hidden="true">
+    <button id="audio-toggle" class="audio-btn" type="button" aria-pressed="false" aria-label="Reproducir audio de fondo">
+      <span class="audio-icon" aria-hidden="true">▶︎</span>
+      <span class="audio-label">Reproducir</span>
+    </button>
+  </div>
+
+  <button id="chat-bubble" class="chat-bubble" aria-label="Mostrar créditos" title="Mostrar créditos">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d="M20 2H4a2 2 0 0 0-2 2v14l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+    </svg>
+  </button>
+
+  <div id="chat-tooltip" class="chat-tooltip" role="status" aria-hidden="true">Haz clic aquí para ver el texto</div>
+
+  <script src="creditos.js" defer></script>
+</body>
+</html>

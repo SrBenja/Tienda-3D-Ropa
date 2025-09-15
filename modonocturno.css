@@ -1,0 +1,186 @@
+/* modonocturno.css - versión nueva y corregida para asegurar legibilidad del carrito en modo oscuro */
+/* Variables base */
+:root{
+  --bg: #ffffff;
+  --text: #111111;
+  --muted: #6b6b6b;
+  --nav-bg: #ffffff;
+  --card-bg: #ffffff;
+  --accent: #343D5B;
+  --switch-bg: #343D5B;
+  --switch-knob: #F1F1F1;
+  --transition: 220ms ease;
+
+  /* botón pagar por defecto (claro) */
+  --pay-bg: #1aa260;
+  --pay-text: #000000;
+  --pay-hover: #179153;
+}
+
+/* Anulaciones dark */
+body.dark {
+  --bg: #0f1112;
+  --text: #f5f6f7;
+  --muted: #bcbcbc;
+  --nav-bg: #161718;
+  --card-bg: #121213;
+  --accent: #f0a500;
+  --switch-bg: #f0a500;
+  --switch-knob: #111111;
+  --badge-bg: #ffffff;
+  --badge-text: #0b0b0b;
+
+  /* en oscuro el botón "Pagar" se vuelve acorde al tema pero con contraste suficiente */
+  --pay-bg: #f0a500;
+  --pay-text: #000000;
+  --pay-hover: #e09500;
+}
+
+/* Aplicar variables de manera amplia */
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+body.dark .titulo-item { color: var(--text) !important; }
+body.dark .colornegro { color: var(--text) !important; }
+
+/* Forzar legibilidad del número solo en modo oscuro */
+body.dark .carrito .carrito-item-cantidad,
+body.dark .carrito .selector-cantidad input,
+body.dark .cart-count,
+body.dark .badge,
+body.dark .item-count {
+  background: transparent;
+  color: #ffffff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+}
+
+/* SWITCH (botón) */
+.switch {
+  background: var(--switch-bg);
+  border-radius: 999px;
+  border: none;
+  position: relative;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px;
+  height: 34px;
+  width: 68px;
+  outline: none;
+  transition: background-color var(--transition), box-shadow var(--transition);
+}
+.switch:focus { box-shadow: 0 0 0 4px rgba(100,100,200,0.12); }
+.switch::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 26px;
+  background: var(--switch-knob);
+  border-radius: 50%;
+  transition: transform .28s cubic-bezier(.2,.9,.2,1), background-color var(--transition);
+  transform: translateX(0);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.switch.active { background: var(--accent); color: #000; }
+.switch.active::after { transform: translateX(34px); background: var(--switch-knob); }
+.switch[aria-pressed="true"] { background: var(--accent); }
+.switch[aria-pressed="true"]::after { transform: translateX(34px); }
+
+/* Ayuda para la transición de temas */
+.theme-transition, .theme-transition * {
+  transition: background-color var(--transition) !important;
+}
+
+/* Tarjetas / cuadrícula en oscuro */
+body.dark .grid .card { background: var(--card-bg); color: var(--text); box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
+body.dark h1 { color: var(--text); }
+
+/* Aseguramos color legible para "Tu total" y precio */
+body.dark .carrito .carrito-total,
+body.dark .carrito .carrito-total * {
+  color: var(--text) !important;
+}
+
+/* La etiqueta que muestra el precio (span.carrito-precio-total) */
+body.dark .carrito-precio-total,
+body.dark .carrito .carrito-precio-total {
+  color: var(--text) !important;
+  font-weight: 700;
+}
+
+/* Si el encabezado usa .colornegro o .carrito-total h1 */
+body.dark .carrito .carrito-total .fila h1,
+body.dark .carrito .header-carrito h2,
+body.dark .carrito .header-carrito h2 * {
+  color: var(--text) !important;
+}
+
+/* Aseguramos que el fondo del panel del carrito sea oscuro y contraste con el texto */
+body.dark .carrito,
+body.dark .carrito .carrito-total,
+body.dark .carrito .carrito-items {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+/* Botones dentro del carrito -> "Pagar" específico */
+.btn-pagar {
+  background: var(--pay-bg);
+  color: var(--pay-text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  transition: background-color var(--transition), box-shadow var(--transition), transform .08s ease;
+  box-shadow: 0 10px 22px rgba(26,162,96,0.06);
+}
+.btn-pagar:hover { background: var(--pay-hover); transform: translateY(-1px); }
+.btn-pagar:active { transform: translateY(0); }
+
+/* Forzar contraste en modo oscuro para pagar (puede anular los estilos existentes) */
+body.dark .btn-pagar,
+body.dark .btn-pagar * {
+  background: var(--pay-bg) !important;
+  color: var(--pay-text) !important;
+  box-shadow: 0 12px 30px rgba(240,165,0,0.08) !important;
+}
+
+/* hover en oscuro */
+body.dark .btn-pagar:hover,
+body.dark .btn-pagar:hover * {
+  background: var(--pay-hover) !important;
+}
+
+/* Enfoque visible para la accesibilidad */
+.btn-pagar:focus {
+  outline: 3px solid rgba(255,255,255,0.12);
+  outline-offset: 2px;
+}
+
+/* Elementos con clase .colornegro */
+body.dark .colornegro { color: var(--text) !important; }
+
+/* Enlaces y textos secundarios en oscuro */
+body.dark a { color: #cfcfcf; }
+body.dark a:hover { color: #ffffff; }
+
+/* Ajustes de navegación */
+body.dark nav { background: var(--nav-bg); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
+body.dark nav a { color: #c8c8c8; }
+body.dark nav a:hover { color: #FEFEFE; }
+
+/* Invertir iconos peligrosos si es necesario */
+body.dark .btn-eliminar { filter: invert(0.95) hue-rotate(180deg); }
+
+/* Ayuda adicional: precios y etiquetas de los productos */
+body.dark .precio-item,
+body.dark .item .titulo-item,
+body.dark .item .precio-item {
+  color: var(--text) !important;
+}
