@@ -1,4 +1,4 @@
-/* app.js (actualizado: corrección carrito/whatsapp móvil) */
+/* app.js — versión final (merge: tu código + correcciones WhatsApp draggable/clamp) */
 (function(){
   'use strict';
 
@@ -111,7 +111,7 @@
 
     ocultarCarritoSiVacio();
 
-    // Inicializar WhatsApp draggable (si está en la página)
+    // Inicializar WhatsApp draggable + restauración (solo si el nodo existe)
     initWhatsAppPosition();
   }
 
@@ -345,35 +345,32 @@
 
   // WhatsApp helpers: restaurar posición con límites (evita quedar fuera del viewport)
   function initWhatsAppPosition() {
+    // función auxiliar: si estamos en un viewport móvil (<=600px)
     function isMobileViewport() {
       try { return window.matchMedia('(max-width: 600px)').matches; } catch(e) { return false; }
     }
-    if (!isMobileViewport()) return;
 
     var el = document.getElementById('whatsapp');
     if (!el) return;
 
+    // restaurar posición guardada (si existe)
     try {
       var raw = localStorage.getItem('whatsappPos');
       if (raw) {
         var pos = JSON.parse(raw);
         if (pos && typeof pos.x === 'number' && typeof pos.y === 'number') {
-          // clamp to viewport - dejamos 6px de margen
           var margin = 6;
           var maxLeft = Math.max(margin, Math.floor(window.innerWidth - el.offsetWidth - margin));
           var maxTop = Math.max(margin, Math.floor(window.innerHeight - el.offsetHeight - margin));
           var fitX = Math.min(Math.max(margin, pos.x), maxLeft);
           var fitY = Math.min(Math.max(margin, pos.y), maxTop);
 
-          // si el valor original estaba fuera de rango (pos fuera), restablecemos posición por defecto
           var outOfRange = (pos.x < margin || pos.y < margin || pos.x > window.innerWidth || pos.y > window.innerHeight);
           if (outOfRange) {
-            // limpiamos left/top para usar right/bottom por defecto
             el.style.left = '';
             el.style.top = '';
             el.style.right = '';
             el.style.bottom = '';
-            // aplicamos defaults (bottom/right ya definidos en CSS)
           } else {
             el.style.left = fitX + 'px';
             el.style.top = fitY + 'px';
@@ -385,7 +382,96 @@
     } catch(e){
       // ignore
     }
+
+    // activar arrastre solo en dispositivos táctiles / si viewport móvil (evita efectos no deseados en desktop)
+    var supportsPointer = !!window.PointerEvent;
+    var isTouchLike = (('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0));
+    if (!isTouchLike) {
+      // Aún así, asegurar que la posición queda clampada si rota la pantalla
+      clampWhatsAppPosition();
+      return;
+    }
+
+    // pointer drag handlers (pointer events)
+    var dragging = false;
+    var pointerId = null;
+    var startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+    function getPx(v) { return v ? parseFloat(String(v).replace('px','')) : 0; }
+
+    el.addEventListener('pointerdown', function(ev){
+      if (ev.button && ev.button !== 0) return;
+      pointerId = ev.pointerId;
+      dragging = true;
+      try { el.setPointerCapture(pointerId); } catch(e){}
+      startX = ev.clientX; startY = ev.clientY;
+      var cs = window.getComputedStyle(el);
+      origLeft = getPx(cs.left) || el.getBoundingClientRect().left;
+      origTop  = getPx(cs.top)  || el.getBoundingClientRect().top;
+      el.style.left = origLeft + 'px';
+      el.style.top  = origTop + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+      ev.preventDefault();
+    }, { passive: false });
+
+    el.addEventListener('pointermove', function(ev){
+      if (!dragging || ev.pointerId !== pointerId) return;
+      var dx = ev.clientX - startX;
+      var dy = ev.clientY - startY;
+      var newLeft = Math.max(6, Math.min(window.innerWidth - el.offsetWidth - 6, Math.round(origLeft + dx)));
+      var newTop  = Math.max(6, Math.min(window.innerHeight - el.offsetHeight - 6, Math.round(origTop + dy)));
+      el.style.left = newLeft + 'px';
+      el.style.top  = newTop  + 'px';
+      ev.preventDefault();
+    }, { passive: false });
+
+    function endDrag(ev) {
+      if (!dragging || ev.pointerId !== pointerId) return;
+      try { el.releasePointerCapture(pointerId); } catch (e) {}
+      dragging = false;
+      pointerId = null;
+      try {
+        var rect = el.getBoundingClientRect();
+        var pos = { x: Math.round(rect.left), y: Math.round(rect.top) };
+        localStorage.setItem('whatsappPos', JSON.stringify(pos));
+      } catch(e){}
+    }
+
+    el.addEventListener('pointerup', endDrag, false);
+    el.addEventListener('pointercancel', endDrag, false);
   }
+
+  function clampWhatsAppPosition() {
+    var el = document.getElementById('whatsapp');
+    if (!el) return;
+    try {
+      var cs = window.getComputedStyle(el);
+      var left = parseFloat(cs.left) || el.getBoundingClientRect().left;
+      var top = parseFloat(cs.top) || el.getBoundingClientRect().top;
+      var margin = 6;
+      var maxLeft = Math.max(margin, Math.floor(window.innerWidth - el.offsetWidth - margin));
+      var maxTop = Math.max(margin, Math.floor(window.innerHeight - el.offsetHeight - margin));
+      var fitX = Math.min(Math.max(margin, Math.round(left)), maxLeft);
+      var fitY = Math.min(Math.max(margin, Math.round(top)), maxTop);
+      el.style.left = fitX + 'px';
+      el.style.top = fitY + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+      try { localStorage.setItem('whatsappPos', JSON.stringify({ x: fitX, y: fitY })); } catch(e){}
+    } catch(e){}
+  }
+
+  // Función de ayuda para limpiar posición guardada (útil para pruebas)
+  window.__resetWhatsAppPos = function() {
+    try { localStorage.removeItem('whatsappPos'); } catch(e){}
+    var el = document.getElementById('whatsapp');
+    if (!el) return;
+    el.style.left = '';
+    el.style.top = '';
+    el.style.right = '';
+    el.style.bottom = '';
+  };
 
   // FIN IIFE
 })();

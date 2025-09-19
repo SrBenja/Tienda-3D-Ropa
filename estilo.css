@@ -1,6 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600&family=Titillium+Web:wght@200;300;400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
+/* Evitar scroll horizontal */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* <-- evita la barra horizontal indeseada */
+  font-family: 'Open Sans', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background:#000;
+  color:#fff;
+}
+
 /* --- BOX-SIZING global (seguro, evita sorpresas con padding/widths) --- */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -582,17 +592,15 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
 
   #menu ul { display: flex; gap: 8px; align-items: center; padding-right: 12px; }
 
-  /* Switch: más compacto y siempre dentro del viewport */
+  /* Switch: dejado en flujo (NO absolute) para que quede debajo si no hay espacio */
   .switch {
-    position: absolute;
-    right: 12px;
-    top: 12px;
-    margin-right: 0 !important;
+    /* removido position:absolute => queda en flujo y, si falta espacio, quedará debajo del resto */
+    margin-right: 8px;
     z-index: 90;
     background: transparent;
     border: none;
     padding: 6px;
-    width: 36px;
+    width: auto;
     height: 36px;
     display: inline-flex;
     align-items:center;
