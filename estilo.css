@@ -498,6 +498,7 @@ footer .footer2{
   align-items: center;
   gap: 10px;
   z-index: 1000;
+  touch-action: none; /* permitimos pointer drag handling sin gestos nativos */
 }
 
 #whatsapp .whatsapp-bubble {
@@ -595,3 +596,102 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
   outline: 3px solid #318aac;
   outline-offset: 2px;
 }
+
+/* ======================================================================
+   Cambios / mejoras específicas para móvil (aplican solo si ancho <= 600px)
+   ====================================================================== */
+@media screen and (max-width: 600px) {
+
+  /* --- 1) Evitar que el switch baje debajo de Créditos: lo posicionamos top-right --- */
+  #menu {
+    padding-right: 64px; /* espacio para el switch */
+    height: 72px;
+  }
+  #menu ul { display: flex; gap: 8px; align-items: center; padding-right: 12px; }
+  /* Hacemos el switch absoluto para que no empuje/rompa el flujo en pantallas estrechas */
+  .switch {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    margin-right: 0 !important;
+    z-index: 90;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:8px;
+  }
+  .switch:hover { background: rgba(255,255,255,0.03); }
+
+  /* Ajustes del header links para evitar alturas enormes */
+  #menu ul li a { padding: 0 8px; height: 56px; align-items:center; }
+
+  /* --- 2) WhatsApp: icono más pequeño en móvil --- */
+  #whatsapp svg { width: 56px !important; height: 56px !important; }
+  #whatsapp { bottom: 14px; right: 12px; }
+  #whatsapp .whatsapp-bubble { font-size: 13px; padding: 6px 10px; }
+
+  /* mostrar la burbuja en tap (no solo hover) — si el navegador soporta :has */
+  @supports(selector(:has(*))) {
+    #whatsapp:has(a:focus) .whatsapp-bubble,
+    #whatsapp:has(a:active) .whatsapp-bubble {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+  }
+
+  /* --- 3) Evitar desenfoque/artefactos en relámpagos cuando vertical --- */
+  .weather-overlay,
+  .weather-rain,
+  .weather-lightning {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  /* Un ligero boost de contraste para que los flashes luzcan más nítidos */
+  .weather-lightning { filter: contrast(1.06) saturate(1.02); }
+
+  /* --- 4) Carrito: asegurar que ocupa todo el ancho y no se superpone --- */
+  .carrito {
+    position: static;
+    width: 100% !important;
+    max-width: 100% !important;
+    top: auto;
+    margin-top: 18px;
+    padding: 12px 10px;
+  }
+  .carrito.carrito--hidden {
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    height: auto;
+    padding: 0;
+    margin: 0;
+  }
+  .carrito.carrito--visible {
+    opacity: 1;
+    pointer-events: auto;
+    padding: 12px 0 0 0;
+  }
+
+  /* Reducir bordes y márgenes de items para móviles */
+  .contenedor .contenedor-items .item { max-width: 100%; padding: 14px; }
+  .contenedor .contenedor-items { gap: 14px; }
+
+  /* Ajustes para mejorar toque y lectura */
+  .carrito-total { padding: 16px; }
+  .carrito-total .fila { font-size: 18px; }
+
+  /* Permitir arrastrar el icono #whatsapp visualmente (no afecta PC) */
+  #whatsapp { touch-action: none; -ms-touch-action: none; }
+}
+
+/* Fin del archivo */

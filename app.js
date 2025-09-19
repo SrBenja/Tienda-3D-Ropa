@@ -37,7 +37,7 @@
       localStorage.removeItem('carrito_for_checkout');
     } catch(e) {}
 
-    // Inicializar visibilidad del carrito
+    // Inicializar visibilidad del carrito (aseguramos clases base)
     if (carritoNode && !carritoNode.classList.contains('carrito--hidden') && !carritoNode.classList.contains('carrito--visible')) {
       carritoNode.classList.add('carrito--hidden');
       carritoNode.setAttribute('aria-hidden', 'true');
@@ -92,10 +92,15 @@
       });
     }
 
-    // Inicializar total si hay valor en DOM
+    // Inicializar total — si el carrito está vacío forzamos 0 y lo mantenemos oculto
     if (totalDisplayNode) {
-      const t = parsePriceToInt(totalDisplayNode.textContent || totalDisplayNode.innerText || '');
-      totalDisplayNode.textContent = formatWithSpaces(t) + ' $';
+      const hasItems = (carritoItemsNode && carritoItemsNode.childElementCount > 0);
+      if (!hasItems) {
+        totalDisplayNode.textContent = '0 $';
+      } else {
+        const t = parsePriceToInt(totalDisplayNode.textContent || totalDisplayNode.innerText || '');
+        totalDisplayNode.textContent = formatWithSpaces(t) + ' $';
+      }
     }
 
     // asegurar persistencia si se cierra la pestaña
@@ -121,6 +126,9 @@
         try { btn.click(); } catch(err){}
       }
     }, true);
+
+    // aseguramos estado inicial del carrito (si está vacío lo ocultamos)
+    ocultarCarritoSiVacio();
   }
 
   /* Handlers */
@@ -234,6 +242,8 @@
       carritoNode.classList.remove('carrito--visible');
       carritoNode.classList.add('carrito--hidden');
       carritoNode.setAttribute('aria-hidden', 'true');
+      // asegurar que el total muestre 0 cuando está vacío
+      if (totalDisplayNode) totalDisplayNode.textContent = '0 $';
     }
   }
 
@@ -380,4 +390,105 @@
 
   window.addEventListener('pageshow', function(){ safeBlur(document.querySelector('#whatsapp a')); });
   window.addEventListener('load', function(){ safeBlur(document.querySelector('#whatsapp a')); });
+})();
+
+/* ===== WhatsApp draggable (solo para pantallas pequeñas) =====
+   - permite arrastrar el icono con el dedo/mouse
+   - guarda la posición en localStorage ('whatsappPos')
+   - solo activa el comportamiento si viewport width <= 600px
+*/
+(function(){
+  function isMobileViewport() {
+    try { return window.matchMedia('(max-width: 600px)').matches; } catch(e) { return false; }
+  }
+  if (!isMobileViewport()) return;
+
+  var root = document.documentElement;
+  var el = document.getElementById('whatsapp');
+  if (!el) return;
+
+  // Restaurar posición si existe
+  try {
+    var raw = localStorage.getItem('whatsappPos');
+    if (raw) {
+      var pos = JSON.parse(raw);
+      if (pos && typeof pos.x === 'number' && typeof pos.y === 'number') {
+        // convertimos a valores absolutos sobre la viewport
+        el.style.left = (pos.x) + 'px';
+        el.style.top = (pos.y) + 'px';
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+      }
+    }
+  } catch(e){}
+
+  var dragging = false;
+  var pointerId = null;
+  var startX = 0, startY = 0, origLeft = 0, origTop = 0;
+
+  function getNumericStyle(v) {
+    return v ? parseFloat(v.replace('px','')) : 0;
+  }
+
+  el.addEventListener('pointerdown', function(ev){
+    // si el pointer down ocurre sobre el enlace interno, permitimos que abra, pero si mantiene pulsado se arrastra
+    // solo reaccionamos con primary button
+    if (ev.button && ev.button !== 0) return;
+    pointerId = ev.pointerId;
+    dragging = true;
+    el.setPointerCapture(pointerId);
+    startX = ev.clientX;
+    startY = ev.clientY;
+    // ensure el has explicit left/top values
+    var cs = window.getComputedStyle(el);
+    origLeft = getNumericStyle(cs.left) || (window.innerWidth - el.getBoundingClientRect().right);
+    origTop = getNumericStyle(cs.top) || (window.innerHeight - el.getBoundingClientRect().bottom);
+    // if left/top not set, compute current left from right
+    if (!cs.left || cs.left === 'auto') {
+      // place based on right/bottom unless left is defined
+      // set left to current left computed
+      var rect = el.getBoundingClientRect();
+      origLeft = rect.left;
+      origTop = rect.top;
+      el.style.left = origLeft + 'px';
+      el.style.top = origTop + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+    }
+    startX = ev.clientX;
+    startY = ev.clientY;
+    origLeft = parseFloat(el.style.left || origLeft) || 0;
+    origTop = parseFloat(el.style.top || origTop) || 0;
+    ev.preventDefault();
+  }, { passive: false });
+
+  el.addEventListener('pointermove', function(ev){
+    if (!dragging || ev.pointerId !== pointerId) return;
+    var dx = ev.clientX - startX;
+    var dy = ev.clientY - startY;
+    var newLeft = Math.max(6, Math.min(window.innerWidth - el.offsetWidth - 6, origLeft + dx));
+    var newTop = Math.max(6, Math.min(window.innerHeight - el.offsetHeight - 6, origTop + dy));
+    el.style.left = newLeft + 'px';
+    el.style.top = newTop + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+    ev.preventDefault();
+  }, { passive: false });
+
+  function endDrag(ev) {
+    if (!dragging || ev.pointerId !== pointerId) return;
+    try { el.releasePointerCapture(pointerId); } catch(e){}
+    dragging = false;
+    pointerId = null;
+    // guardar posición
+    try {
+      var rect = el.getBoundingClientRect();
+      var pos = { x: Math.round(rect.left), y: Math.round(rect.top) };
+      localStorage.setItem('whatsappPos', JSON.stringify(pos));
+    } catch(e){}
+  }
+
+  el.addEventListener('pointerup', endDrag, false);
+  el.addEventListener('pointercancel', endDrag, false);
+  window.addEventListener('resize', function(){ /* opcional: podríamos reajustar límites si cambia viewport */ }, false);
 })();
