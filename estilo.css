@@ -13,7 +13,6 @@
 }
 
 /* Animación logo: unificada duración y respetar prefers-reduced-motion */
-/* -> Elegí 3.5 segundos para que coincida y la animación siga funcionando */
 @-webkit-keyframes rotate { from { -webkit-transform: rotate(0deg); } to { -webkit-transform: rotate(360deg); } }
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -25,7 +24,6 @@
     padding: 30px;
 }
 
-/* Si el usuario pide reducir la animación, apagarla */
 @media (prefers-reduced-motion: reduce) {
   .logo {
     -webkit-animation: none !important;
@@ -53,10 +51,8 @@
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-
 }
 
-/* propiedad específica en mi-boton2 */
 .mi-boton2 { max-height: 50px; }
 
 .mi-boton:hover,
@@ -98,6 +94,7 @@
     align-items: center;
     flex-direction: row;
     background-color: #000;
+    /* IMPORTANTE: no esconder overflow en móvil — lo controlamos en mobile rules */
     overflow: hidden;
 }
 #menu ul{ list-style: none; margin: 0; padding: 0; }
@@ -150,7 +147,6 @@ footer .footer2{
     color: white;
 }
 
-/* logo hover */
 .logo:hover{
     border-radius: 50%;
     box-shadow: 0px 0px 15px 15px #db0cae;
@@ -166,7 +162,7 @@ footer .footer2{
     align-items: flex-start;
 }
 
-/* Zona de productos: grid flexible que puede encogerse para evitar overflow */
+/* Zona de productos: grid flexible */
 .contenedor .contenedor-items{
     margin-top: 30px;
     display: grid;
@@ -215,7 +211,7 @@ footer .footer2{
     cursor: pointer;
 }
 
-/* seccion carrito (mejorada y colapsable; no ocupa espacio cuando está hidden) */
+/* seccion carrito (mejorada y colapsable) */
 .carrito{
     border: 1px solid #666;
     flex: 0 0 0;
@@ -250,6 +246,7 @@ footer .footer2{
     opacity: 0;
     pointer-events: none;
     padding: 0;
+    display: none; /* por defecto no se muestra */
 }
 
 /* cabecera carrito */
@@ -260,7 +257,7 @@ footer .footer2{
     padding: 30px 0;
 }
 
-/* item del carrito: layout en flex y soporte para títulos multilínea */
+/* item del carrito */
 .carrito .carrito-item{
     display: flex;
     align-items: flex-start;
@@ -274,7 +271,7 @@ footer .footer2{
     margin-right: 20px;
 }
 
-/* detalles (título, selector, precio) — dejar espacio para la papelera */
+/* detalles */
 .carrito .carrito-item .carrito-item-detalles{
     padding-right: 60px;
     min-width: 0;
@@ -355,14 +352,13 @@ footer .footer2{
     pointer-events: none;
 }
 
-/* total y boton pagar (compatibilidad para <a class="btn-pagar"> o <button class="btn-pagar">) */
+/* total y boton pagar */
 .carrito-total {
   background-color: #f3f3f3;
   padding: 30px;
   border-radius: 6px;
 }
 
-/* fila: total y precio */
 .carrito-total .fila {
   display: flex;
   justify-content: space-between;
@@ -372,7 +368,6 @@ footer .footer2{
   margin-bottom: 10px;
 }
 
-/* botón pagar: aplica tanto a <a> como a <button> */
 .carrito-total a.btn-pagar,
 .carrito-total button.btn-pagar {
   display: flex;
@@ -394,7 +389,6 @@ footer .footer2{
   appearance: none;
 }
 
-/* Asegurar que ningún hijo (i, svg, span) muestre subrayado */
 .carrito-total a.btn-pagar *,
 .carrito-total button.btn-pagar * {
   text-decoration: none !important;
@@ -420,7 +414,6 @@ footer .footer2{
   box-shadow: 0 10px 26px rgba(0,0,0,0.12);
 }
 
-/* Icono dentro del botón (si usas <i> o <svg>) */
 .carrito-total .btn-pagar i,
 .carrito-total .btn-pagar svg {
   margin-left: 12px;
@@ -466,9 +459,7 @@ footer .footer2{
   min-width: 0;
 }
 
-/* SECCION RESPONSIVE
-   -> @media 600px; el bloque móvil principal es para 850px y 600px arriba.
-*/
+/* SECCION RESPONSIVE */
 @media screen and (max-width: 850px) {
     .contenedor { display: block; }
     .contenedor .contenedor-items,
@@ -478,18 +469,29 @@ footer .footer2{
         flex: 0 0 auto;
         width: 100% !important;
         max-width: 100% !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
+        /* removido: opacity/pointer-events forcados para permitir clases hidden/visible */
         padding: 16px 0 0 0;
     }
 
-    /* en móvil no queremos que colapse: forzamos display:block para evitar alertas del linter */
+    /* En móvil: el carrito oculto no debe mostrarse. Forzamos display:none cuando está hidden */
     .carrito.carrito--hidden {
-      display: block;
+      display: none !important;
+      opacity: 0;
+      pointer-events: none;
+      height: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    .carrito.carrito--visible {
+      display: block !important;
+      opacity: 1;
+      pointer-events: auto;
+      padding: 12px 0 0 0;
     }
 }
 
-/* WhatsApp: burbuja oculta por defecto, visible solo en hover/focus */
+/* WhatsApp: burbuja y icono */
 #whatsapp {
   position: fixed;
   bottom: 20px;
@@ -498,7 +500,7 @@ footer .footer2{
   align-items: center;
   gap: 10px;
   z-index: 1000;
-  touch-action: none; /* permitimos pointer drag handling sin gestos nativos */
+  touch-action: none;
 }
 
 #whatsapp .whatsapp-bubble {
@@ -516,15 +518,13 @@ footer .footer2{
   transition: opacity .18s ease, transform .18s ease, visibility .18s;
 }
 
-/* Selector principal: hover */
 #whatsapp:hover .whatsapp-bubble {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 
-/* === WhatsApp - evitar cuadro azul persistente al hacer clic === */
-/* 1) Mostrar outline solo para usuarios de teclado (focus-visible) */
+/* focus styles accesible */
 #whatsapp a { outline: none; }
 @supports(selector(:focus-visible)) {
   #whatsapp a:focus { outline: none; }
@@ -535,10 +535,7 @@ footer .footer2{
   }
 }
 
-
-/* Mejor: también mostrar cuando el enlace recibe foco visible (teclado) — usa :has() si está disponible */
 @supports(selector(:has(*))) {
-  /* Si el navegador soporta :has(), mostramos la burbuja cuando el <a> interno tenga :focus-visible */
   #whatsapp:has(a:focus-visible) .whatsapp-bubble {
     opacity: 1;
     visibility: visible;
@@ -546,7 +543,6 @@ footer .footer2{
   }
 }
 
-/* El enlace solo rodea el icono (sin padding extra) */
 #whatsapp a {
   display: inline-flex;
   align-items: center;
@@ -555,42 +551,21 @@ footer .footer2{
   background: transparent;
 }
 
-/* Aseguramos que el SVG reciba clics */
+/* Asegurar el tamaño por defecto (desktop) */
 #whatsapp svg {
   width: 80px;
   height: 80px;
   pointer-events: auto;
 }
 
-/* Evitar highlight táctil molesto en móviles */
-#whatsapp a, #whatsapp a * {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* FIX definitivo: asegurar visibilidad del icono WhatsApp (círculo verde + símbolo blanco) */
-#whatsapp { z-index: 1000; }
-
 /* Forzar color del círculo (override incluso si el SVG trae fill inline) */
 #whatsapp circle {
   fill: #25d366 !important;
 }
+#whatsapp svg { color: #ffffff !important; display: inline-block; width: 80px; height: 80px; }
+#whatsapp path { fill: #ffffff !important; }
 
-/* Forzar que currentColor dentro del SVG sea blanco (para que path con fill="currentColor" se vea) */
-#whatsapp svg {
-  color: #ffffff !important;
-  display: inline-block;
-  width: 80px;
-  height: 80px;
-}
-
-/* Por si el path no estuviera usando currentColor, lo forzamos también */
-#whatsapp path {
-  fill: #ffffff !important;
-}
-
-/* ACCESIBILIDAD: focus visible para botones interactivos (teclado)
-   -> añadí a:focus para enlaces que actúan como botones (ej. .btn-pagar)
-*/
+/* Accesibilidad focus */
 button:focus, .btn-eliminar:focus, .boton-item:focus, .mi-boton:focus, .mi-boton2:focus,
 a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus {
   outline: 3px solid #318aac;
@@ -602,13 +577,12 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
    ====================================================================== */
 @media screen and (max-width: 600px) {
 
-  /* --- 1) Evitar que el switch baje debajo de Créditos: lo posicionamos top-right --- */
-  #menu {
-    padding-right: 64px; /* espacio para el switch */
-    height: 72px;
-  }
+  /* Hacer #menu overflow visible en móvil para que elementos posicionados absolute no se recorten */
+  #menu { overflow: visible; padding-right: 56px; height: 72px; }
+
   #menu ul { display: flex; gap: 8px; align-items: center; padding-right: 12px; }
-  /* Hacemos el switch absoluto para que no empuje/rompa el flujo en pantallas estrechas */
+
+  /* Switch: más compacto y siempre dentro del viewport */
   .switch {
     position: absolute;
     right: 12px;
@@ -618,8 +592,8 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
     background: transparent;
     border: none;
     padding: 6px;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items:center;
     justify-content:center;
@@ -627,15 +601,14 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
   }
   .switch:hover { background: rgba(255,255,255,0.03); }
 
-  /* Ajustes del header links para evitar alturas enormes */
+  /* Ajustes del header links */
   #menu ul li a { padding: 0 8px; height: 56px; align-items:center; }
 
-  /* --- 2) WhatsApp: icono más pequeño en móvil --- */
+  /* WhatsApp: icono más pequeño en móvil */
   #whatsapp svg { width: 56px !important; height: 56px !important; }
   #whatsapp { bottom: 14px; right: 12px; }
   #whatsapp .whatsapp-bubble { font-size: 13px; padding: 6px 10px; }
 
-  /* mostrar la burbuja en tap (no solo hover) — si el navegador soporta :has */
   @supports(selector(:has(*))) {
     #whatsapp:has(a:focus) .whatsapp-bubble,
     #whatsapp:has(a:active) .whatsapp-bubble {
@@ -645,7 +618,7 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
     }
   }
 
-  /* --- 3) Evitar desenfoque/artefactos en relámpagos cuando vertical --- */
+  /* Evitar desenfoque/artefactos en relámpagos cuando vertical */
   .weather-overlay,
   .weather-rain,
   .weather-lightning {
@@ -656,10 +629,9 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
   }
-  /* Un ligero boost de contraste para que los flashes luzcan más nítidos */
   .weather-lightning { filter: contrast(1.06) saturate(1.02); }
 
-  /* --- 4) Carrito: asegurar que ocupa todo el ancho y no se superpone --- */
+  /* Carrito: estilos adaptados para mobile (visible solo si .carrito--visible) */
   .carrito {
     position: static;
     width: 100% !important;
@@ -669,28 +641,27 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
     padding: 12px 10px;
   }
   .carrito.carrito--hidden {
-    display: block;
+    display: none !important;
     opacity: 0;
     pointer-events: none;
-    height: auto;
+    height: 0;
     padding: 0;
     margin: 0;
   }
   .carrito.carrito--visible {
+    display: block !important;
     opacity: 1;
     pointer-events: auto;
     padding: 12px 0 0 0;
   }
 
-  /* Reducir bordes y márgenes de items para móviles */
   .contenedor .contenedor-items .item { max-width: 100%; padding: 14px; }
   .contenedor .contenedor-items { gap: 14px; }
 
-  /* Ajustes para mejorar toque y lectura */
   .carrito-total { padding: 16px; }
   .carrito-total .fila { font-size: 18px; }
 
-  /* Permitir arrastrar el icono #whatsapp visualmente (no afecta PC) */
+  /* Permitir arrastrar el icono #whatsapp visualmente */
   #whatsapp { touch-action: none; -ms-touch-action: none; }
 }
 
