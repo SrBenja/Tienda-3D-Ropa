@@ -501,7 +501,7 @@ footer .footer2{
     }
 }
 
-/* WhatsApp: burbuja y icono */
+/* WhatsApp: burbuja y icono (mejorado: botón circular, no cortado, responsive y draggable-friendly) */
 #whatsapp {
   position: fixed;
   bottom: 20px;
@@ -510,9 +510,36 @@ footer .footer2{
   align-items: center;
   gap: 10px;
   z-index: 1000;
-  touch-action: none;
+  touch-action: none;             /* para arrastre táctil */
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: auto;
 }
 
+/* Botón circular que envuelve el SVG (evita que el icono se "corte") */
+#whatsapp a.whatsapp-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;              /* importante: corta cualquier overflow del SVG */
+  background: #25d366;           /* color WhatsApp */
+  border: 2px solid rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  text-decoration: none;
+}
+
+/* SVG dentro del botón */
+#whatsapp a.whatsapp-btn svg {
+  width: 40px !important;
+  height: 40px !important;
+  display: block;
+  pointer-events: none;
+}
+
+/* Burbuja de texto (tooltip) */
 #whatsapp .whatsapp-bubble {
   opacity: 0;
   visibility: hidden;
@@ -526,12 +553,20 @@ footer .footer2{
   filter: drop-shadow(0 1px 4px rgba(0,0,0,.4));
   transform: translateY(6px);
   transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
 }
 
-#whatsapp:hover .whatsapp-bubble {
+/* Mostrar burbuja al hover/focus */
+#whatsapp:hover .whatsapp-bubble,
+#whatsapp:focus-within .whatsapp-bubble {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
 /* focus styles accesible */
@@ -545,6 +580,7 @@ footer .footer2{
   }
 }
 
+/* Si el selector :has está soportado, mantener burbuja visible cuando el enlace tiene focus-visible */
 @supports(selector(:has(*))) {
   #whatsapp:has(a:focus-visible) .whatsapp-bubble {
     opacity: 1;
@@ -553,29 +589,11 @@ footer .footer2{
   }
 }
 
-#whatsapp a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  background: transparent;
-}
-
-/* Asegurar el tamaño por defecto (desktop) */
-#whatsapp svg {
-  width: 80px;
-  height: 80px;
-  pointer-events: auto;
-}
-
-/* Forzar color del círculo (override incluso si el SVG trae fill inline) */
-#whatsapp circle {
-  fill: #25d366 !important;
-}
-#whatsapp svg { color: #ffffff !important; display: inline-block; width: 80px; height: 80px; }
+/* Forzar color del círculo y path (override) */
+#whatsapp circle { fill: #25d366 !important; }
 #whatsapp path { fill: #ffffff !important; }
 
-/* Accesibilidad focus */
+/* Accesibilidad focus global (mantener tus reglas) */
 button:focus, .btn-eliminar:focus, .boton-item:focus, .mi-boton:focus, .mi-boton2:focus,
 a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus {
   outline: 3px solid #318aac;
@@ -587,35 +605,28 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
    ====================================================================== */
 @media screen and (max-width: 600px) {
 
-  /* Hacer #menu overflow visible en móvil para que elementos posicionados absolute no se recorten */
-  #menu { overflow: visible; padding-right: 56px; height: 72px; }
-
-  #menu ul { display: flex; gap: 8px; align-items: center; padding-right: 12px; }
-
-  /* Switch: dejado en flujo (NO absolute) para que quede debajo si no hay espacio */
-  .switch {
-    /* removido position:absolute => queda en flujo y, si falta espacio, quedará debajo del resto */
-    margin-right: 8px;
-    z-index: 90;
-    background: transparent;
-    border: none;
-    padding: 6px;
-    width: auto;
-    height: 36px;
-    display: inline-flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:8px;
+  /* Menor tamaño del botón circular y del SVG */
+  #whatsapp a.whatsapp-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
   }
-  .switch:hover { background: rgba(255,255,255,0.03); }
+  #whatsapp a.whatsapp-btn svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
 
-  /* Ajustes del header links */
-  #menu ul li a { padding: 0 8px; height: 56px; align-items:center; }
-
-  /* WhatsApp: icono más pequeño en móvil */
-  #whatsapp svg { width: 56px !important; height: 56px !important; }
+  /* Posición por defecto algo más pegada al borde en móvil */
   #whatsapp { bottom: 14px; right: 12px; }
-  #whatsapp .whatsapp-bubble { font-size: 13px; padding: 6px 10px; }
+
+  /* Burbuja más compacta */
+  #whatsapp .whatsapp-bubble {
+    font-size: 13px;
+    padding: 6px 10px;
+    max-width: 160px;
+    white-space: normal; /* permitir wrapping si hace falta en móviles */
+  }
 
   @supports(selector(:has(*))) {
     #whatsapp:has(a:focus) .whatsapp-bubble,
@@ -626,51 +637,7 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
     }
   }
 
-  /* Evitar desenfoque/artefactos en relámpagos cuando vertical */
-  .weather-overlay,
-  .weather-rain,
-  .weather-lightning {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transform: translateZ(0);
-    will-change: transform, opacity;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
-  .weather-lightning { filter: contrast(1.06) saturate(1.02); }
-
-  /* Carrito: estilos adaptados para mobile (visible solo si .carrito--visible) */
-  .carrito {
-    position: static;
-    width: 100% !important;
-    max-width: 100% !important;
-    top: auto;
-    margin-top: 18px;
-    padding: 12px 10px;
-  }
-  .carrito.carrito--hidden {
-    display: none !important;
-    opacity: 0;
-    pointer-events: none;
-    height: 0;
-    padding: 0;
-    margin: 0;
-  }
-  .carrito.carrito--visible {
-    display: block !important;
-    opacity: 1;
-    pointer-events: auto;
-    padding: 12px 0 0 0;
-  }
-
-  .contenedor .contenedor-items .item { max-width: 100%; padding: 14px; }
-  .contenedor .contenedor-items { gap: 14px; }
-
-  .carrito-total { padding: 16px; }
-  .carrito-total .fila { font-size: 18px; }
-
-  /* Permitir arrastrar el icono #whatsapp visualmente */
+  /* Garantizar touch-action para arrastre */
   #whatsapp { touch-action: none; -ms-touch-action: none; }
 }
 
-/* Fin del archivo */
