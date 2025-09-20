@@ -672,95 +672,63 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
   #whatsapp { right: 12px; bottom: 12px; }
 }
 /* --------------------- FIN NUEVO BLOQUE portrait --------------------- */
+/* (el resto del archivo sigue igual, incluyendo bloques que ya existían)
+   — el siguiente bloque nuevo fuerza grid en portrait para colocar switch
+     debajo de Créditos sin hacer el logo mini. */
 
-/* ===========================
-   AJUSTES MÓVIL - PORTRAIT (REVISIÓN 2)
-   Forzar alineamiento del botón de modo oscuro ('.switch') cerca de 'Créditos'
-   y evitar que la imagen del body se superponga.
-   =========================== */
-@media screen and (max-width: 600px) and (orientation: portrait) {
-  /* Hacer que el header/menu use espacio horizontal eficiente */
-  #menu {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    height: auto;
-    background: transparent;
-    z-index: 1200;
-  }
+ 
+/* BLOQUE ADICIONAL: switch debajo de Créditos en portrait */
 
-  /* Logo reducido para no empujar el resto hacia abajo */
-  #menu > a.logo, #menu > a > img.logo {
-    width: 48px;
-    height: 48px;
-    max-width: 48px;
-    padding: 4px;
-    margin-right: 6px;
-  }
-
-  /* Lista de elementos en una sola línea y centrados verticalmente */
+/* PORTRAIT: Forzar que el botón switch quede DEBAJO de 'Créditos' (alineado a la izquierda) */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* Usamos grid para controlar columnas/filas del menú */
   #menu ul {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
+    display: grid !important;
+    grid-template-columns: auto auto;
+    grid-auto-rows: auto;
     gap: 6px;
     align-items: center;
-    margin: 0;
+    justify-items: start;
+    width: auto;
     padding: 0;
-    list-style: none;
+    margin: 0;
   }
 
-  #menu ul li {
-    display: inline-flex;
+  /* Créditos (1er li) - columna 1 fila 1 */
+  #menu ul li:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Contacto (2do li) - columna 2 fila 1 */
+  #menu ul li:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Switch (último li) - debajo de Créditos (columna 1 fila 2) */
+  #menu ul li:last-child {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    margin-left: 0;
+    margin-top: 2px;
+    width: auto;
+  }
+
+  /* Ajustes visuales para el botón switch */
+  .switch {
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    margin: 0;
-  }
-
-  /* enlaces con padding táctil cómodo y tamaño de fuente legible */
-  #menu ul li a {
-    padding: 8px 10px;
-    font-size: 15px;
-    line-height: 1;
-  }
-
-  /* Botón switch: quitar el margin-right grande y acercarlo al item anterior */
-  .switch {
-    margin-right: 0 !important;
-    margin-left: 6px !important;
     padding: 8px 10px !important;
     min-height: 40px !important;
     border-radius: 28px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.06);
+    margin: 0 !important;
   }
 
-  /* Forzar que el último li (switch) no haga wrap a la siguiente línea */
-  #menu ul li:last-child {
-    margin-left: 6px;
-    flex: 0 0 auto;
-  }
-
-  /* Si el menú tiene muchos items, permitir scroll horizontal en la lista (suave) */
-  #menu ul {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Asegurar que la banner no se superponga: dar espacio top al siguiente contenido */
-  .banner { margin-top: 6px; }
-
-  /* Ajuste adicional: empujar el contenido del body ligeramente para que no tape controles */
-  body { padding-top: 4px; }
-
-  /* Reducir tamaño del whatsapp para no tapar el header */
-  #whatsapp { top: auto; bottom: 12px; right: 12px; width: auto; height: auto; }
+  /* Mantener tamaño original del logo para no hacerlo 'mini' */
+  #menu > a.logo, #menu > a > img.logo { /* tamaño natural, no forzar */ }
 }
-
-/* FIN - AJUSTES MÓVIL PORTRAIT */
