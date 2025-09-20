@@ -37,10 +37,32 @@
       localStorage.removeItem('carrito_for_checkout');
     } catch(e) {}
 
-    // Inicializar visibilidad del carrito
+    // Restaurar carrito desde storage (si existiera)
+    restaurarCarritoDesdeStorage();
+
+    // Inicializar visibilidad del carrito:
+    // si el carrito no tiene clases definidas, ocultarlo por defecto
     if (carritoNode && !carritoNode.classList.contains('carrito--hidden') && !carritoNode.classList.contains('carrito--visible')) {
       carritoNode.classList.add('carrito--hidden');
       carritoNode.setAttribute('aria-hidden', 'true');
+    }
+
+    // Si no hay items en el DOM (ni en storage), asegurarse total = 0 y ocultar carrito
+    if (!carritoItemsNode || carritoItemsNode.childElementCount === 0) {
+      if (totalDisplayNode) totalDisplayNode.textContent = formatWithSpaces(0) + ' $';
+      if (carritoNode) {
+        carritoNode.classList.remove('carrito--visible');
+        carritoNode.classList.add('carrito--hidden');
+        carritoNode.setAttribute('aria-hidden', 'true');
+      }
+    } else {
+      // si hay items, recalcular total y mostrar carrito
+      actualizarTotalCarrito();
+      if (carritoNode) {
+        carritoNode.classList.remove('carrito--hidden');
+        carritoNode.classList.add('carrito--visible');
+        carritoNode.setAttribute('aria-hidden', 'false');
+      }
     }
 
     // Event delegation para botones "Agregar al carrito"
@@ -92,7 +114,7 @@
       });
     }
 
-    // Inicializar total si hay valor en DOM
+    // Inicializar total si hay valor en DOM (si no lo sobreescribió la restauración)
     if (totalDisplayNode) {
       const t = parsePriceToInt(totalDisplayNode.textContent || totalDisplayNode.innerText || '');
       totalDisplayNode.textContent = formatWithSpaces(t) + ' $';
@@ -196,6 +218,10 @@
       }
     }
 
+    // Normalizar precio visual a formato "12 000 $"
+    const precioInt = parsePriceToInt(precioTexto);
+    const precioVisual = formatWithSpaces(precioInt) + ' $';
+
     const itemDiv = document.createElement('div');
     itemDiv.className = 'carrito-item';
 
@@ -208,7 +234,7 @@
           <input type="text" value="1" class="carrito-item-cantidad" readonly>
           <i class="fa-solid fa-plus sumar-cantidad" style="cursor:pointer" role="button" tabindex="0" aria-label="Aumentar cantidad" aria-hidden="false"></i>
         </div>
-        <span class="carrito-item-precio">${escapeHtml(precioTexto)}</span>
+        <span class="carrito-item-precio">${escapeHtml(precioVisual)}</span>
       </div>
       <span class="btn-eliminar" role="button" aria-label="Eliminar item" tabindex="0">
         <i class="fa-solid fa-trash" aria-hidden="true"></i>
@@ -234,6 +260,8 @@
       carritoNode.classList.remove('carrito--visible');
       carritoNode.classList.add('carrito--hidden');
       carritoNode.setAttribute('aria-hidden', 'true');
+      // asegurar total en 0 visualmente
+      if (totalDisplayNode) totalDisplayNode.textContent = formatWithSpaces(0) + ' $';
     }
   }
 
@@ -359,6 +387,57 @@
       try { sessionStorage.setItem('checkout_cart', raw); } catch(e){}
       try { localStorage.setItem('carrito_for_checkout', raw); } catch(e){}
     } catch(e){}
+  }
+
+  /* Restaurar carrito desde localStorage (si hay data) */
+  function restaurarCarritoDesdeStorage() {
+    try {
+      const raw = localStorage.getItem('carrito');
+      if (!raw) return;
+      const items = JSON.parse(raw);
+      if (!Array.isArray(items) || items.length === 0) return;
+      if (!carritoItemsNode) return;
+
+      // limpiar nodo actual y reconstruir
+      carritoItemsNode.innerHTML = '';
+      items.forEach(it => {
+        const titulo = it.name || 'Producto';
+        const qty = Number.isFinite(it.qty) ? it.qty : (it.quantity || 1);
+        const price = Number.isFinite(it.price) ? it.price : parsePriceToInt(it.price || 0);
+        const img = it.img || it.image || '';
+
+        const precioVisual = formatWithSpaces(price) + ' $';
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'carrito-item';
+        itemDiv.innerHTML = `
+          <img src="${escapeHtml(img || '')}" width="80" height="80" alt="${escapeHtml(titulo)}">
+          <div class="carrito-item-detalles">
+            <span class="carrito-item-titulo">${escapeHtml(titulo)}</span>
+            <div class="selector-cantidad">
+              <i class="fa-solid fa-minus restar-cantidad" style="cursor:pointer" role="button" tabindex="0" aria-label="Disminuir cantidad" aria-hidden="false"></i>
+              <input type="text" value="${escapeHtml(String(qty))}" class="carrito-item-cantidad" readonly>
+              <i class="fa-solid fa-plus sumar-cantidad" style="cursor:pointer" role="button" tabindex="0" aria-label="Aumentar cantidad" aria-hidden="false"></i>
+            </div>
+            <span class="carrito-item-precio">${escapeHtml(precioVisual)}</span>
+          </div>
+          <span class="btn-eliminar" role="button" aria-label="Eliminar item" tabindex="0">
+            <i class="fa-solid fa-trash" aria-hidden="true"></i>
+          </span>
+        `;
+        carritoItemsNode.appendChild(itemDiv);
+      });
+
+      // actualizar total y mostrar carrito
+      actualizarTotalCarrito();
+      if (carritoNode) {
+        carritoNode.classList.remove('carrito--hidden');
+        carritoNode.classList.add('carrito--visible');
+        carritoNode.setAttribute('aria-hidden', 'false');
+      }
+    } catch(e) {
+      // si falla la restauración, silenciar
+    }
   }
 
   // FIN del IIFE (no se expone nada a window)
