@@ -1,6 +1,3 @@
-/* estilo.css - versión con fix para carrito oculto */
-
-/* Fuentes */
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600&family=Titillium+Web:wght@200;300;400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
@@ -16,6 +13,7 @@
 }
 
 /* Animación logo: unificada duración y respetar prefers-reduced-motion */
+/* -> Elegí 3.5 segundos para que coincida y la animación siga funcionando */
 @-webkit-keyframes rotate { from { -webkit-transform: rotate(0deg); } to { -webkit-transform: rotate(360deg); } }
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -55,6 +53,7 @@
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+
 }
 
 /* propiedad específica en mi-boton2 */
@@ -244,7 +243,6 @@ footer .footer2{
 }
 
 /* Cuando el carrito está oculto: colapsado a 0 (no ocupa ancho) */
-/* ADICIONAL: forzamos display:none para evitar que valores de ejemplo sean visibles en móvil */
 .carrito.carrito--hidden {
     flex: 0 0 0;
     width: 0;
@@ -252,7 +250,6 @@ footer .footer2{
     opacity: 0;
     pointer-events: none;
     padding: 0;
-    display: none !important;
 }
 
 /* cabecera carrito */
@@ -469,7 +466,9 @@ footer .footer2{
   min-width: 0;
 }
 
-/* SECCION RESPONSIVE */
+/* SECCION RESPONSIVE
+   -> @media 600px; el bloque móvil principal es para 850px y 600px arriba.
+*/
 @media screen and (max-width: 850px) {
     .contenedor { display: block; }
     .contenedor .contenedor-items,
@@ -484,6 +483,7 @@ footer .footer2{
         padding: 16px 0 0 0;
     }
 
+    /* en móvil no queremos que colapse: forzamos display:block para evitar alertas del linter */
     .carrito.carrito--hidden {
       display: none !important;
     }
@@ -499,6 +499,7 @@ footer .footer2{
   gap: 10px;
   z-index: 1000;
 }
+
 #whatsapp .whatsapp-bubble {
   opacity: 0;
   visibility: hidden;
@@ -513,38 +514,271 @@ footer .footer2{
   transform: translateY(6px);
   transition: opacity .18s ease, transform .18s ease, visibility .18s;
 }
+
+/* Selector principal: hover */
 #whatsapp:hover .whatsapp-bubble {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
-#whatsapp a { display: inline-flex; align-items: center; justify-content: center; padding: 0; background: transparent; outline:none; }
-#whatsapp svg { width: 80px; height: 80px; pointer-events: auto; }
-#whatsapp circle { fill: #25d366 !important; }
-#whatsapp path { fill: #ffffff !important; }
 
-/* ACCESIBILIDAD: focus visible para botones interactivos */
+/* === WhatsApp - evitar cuadro azul persistente al hacer clic === */
+/* 1) Mostrar outline solo para usuarios de teclado (focus-visible) */
+#whatsapp a { outline: none; }
+@supports(selector(:focus-visible)) {
+  #whatsapp a:focus { outline: none; }
+  #whatsapp a:focus-visible {
+    outline: 3px solid #318aac;
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+}
+
+
+/* Mejor: también mostrar cuando el enlace recibe foco visible (teclado) — usa :has() si está disponible */
+@supports(selector(:has(*))) {
+  /* Si el navegador soporta :has(), mostramos la burbuja cuando el <a> interno tenga :focus-visible */
+  #whatsapp:has(a:focus-visible) .whatsapp-bubble {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+/* El enlace solo rodea el icono (sin padding extra) */
+#whatsapp a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+}
+
+/* Aseguramos que el SVG reciba clics */
+#whatsapp svg {
+  width: 80px;
+  height: 80px;
+  pointer-events: auto;
+}
+
+/* Evitar highlight táctil molesto en móviles */
+#whatsapp a, #whatsapp a * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* FIX definitivo: asegurar visibilidad del icono WhatsApp (círculo verde + símbolo blanco) */
+#whatsapp { z-index: 1000; }
+
+/* Forzar color del círculo (override incluso si el SVG trae fill inline) */
+#whatsapp circle {
+  fill: #25d366 !important;
+}
+
+/* Forzar que currentColor dentro del SVG sea blanco (para que path con fill="currentColor" se vea) */
+#whatsapp svg {
+  color: #ffffff !important;
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+
+/* Por si el path no estuviera usando currentColor, lo forzamos también */
+#whatsapp path {
+  fill: #ffffff !important;
+}
+
+/* ACCESIBILIDAD: focus visible para botones interactivos (teclado)
+   -> añadí a:focus para enlaces que actúan como botones (ej. .btn-pagar)
+*/
 button:focus, .btn-eliminar:focus, .boton-item:focus, .mi-boton:focus, .mi-boton2:focus,
 a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus {
   outline: 3px solid #318aac;
   outline-offset: 2px;
 }
 
-/* ===========================
-   Ajustes portrait: switch debajo de Créditos y logo preservado
-   (tus reglas previas, conservadas)
-   =========================== */
+/* -----------------------
+   NUEVO: Ajustes SOLO para MÓVIL EN ORIENTACIÓN VERTICAL (portrait)
+   Objetivo: alinear el botón .switch con el enlace "Créditos" y acercarlo,
+   evitando posiciones demasiado abajo y que la imagen del body se superponga.
+   ----------------------- */
 @media screen and (max-width: 600px) and (orientation: portrait) {
-  #menu { height: auto; padding: 8px 10px; align-items: flex-start; position: relative; z-index: 1100; }
-  #menu ul { display: grid !important; grid-template-columns: auto 1fr; grid-auto-rows: auto; column-gap: 12px; row-gap: 4px; padding-left: 12px; margin:0; align-items:center; justify-items:start; width: calc(100% - 12px); list-style:none; }
-  #menu ul li a { padding-left: 0; padding-right: 12px; display:inline-flex; align-items:center; height:auto; line-height:1; font-size:15px; }
-  #menu ul li:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: start; margin: 0; }
-  #menu ul li:nth-child(2) { grid-column: 2; grid-row: 1; justify-self: start; margin: 0; }
-  #menu ul li:last-child { grid-column: 1; grid-row: 2; justify-self: start; margin: 0; padding: 0; width: auto; }
-  .switch { margin: 0 !important; padding: 8px 10px !important; min-height:40px !important; border-radius:28px !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.04); }
-  .logo { padding: 30px !important; }
-  .banner { margin-top: 6px; }
-  #whatsapp { bottom:12px; right:12px; }
+  /* Hacemos que el menú sea flexible y que sus items se alineen en la misma línea
+     cuando sea posible; si hay wrap, los items estarán centrados verticalmente. */
+  #menu {
+    height: auto;
+    padding: 8px 10px;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1100; /* asegurar que quede por encima de imágenes/banners */
+  }
+
+  /* Convertimos la lista en flex con wrap, para controlar alineamiento */
+  #menu ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  /* Cada li se comporta como inline-flex y centra su contenido verticalmente */
+  #menu ul li {
+    display: inline-flex;
+    align-items: center;
+    height: auto;
+  }
+
+  /* Ajuste para los enlaces dentro del menú (Créditos, Contacto) */
+  #menu ul li a {
+    height: auto;
+    padding: 8px 10px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ajuste específico del botón switch en portrait: menos margin-right y centrado */
+  .switch {
+    margin-right: 0;   /* quitar margen grande del desktop */
+    margin-left: 6px;  /* pequeño espacio respecto al item anterior */
+    padding: 8px 10px;
+    border-radius: 36px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    transform: translateY(0); /* asegurar que esté alineado con el texto */
+    position: relative;
+  }
+
+  /* Si el menú ocupa dos filas por el ancho, forzamos que el switch quede cerca de Créditos:
+     buscamos el último LI (presumiblemente el switch) y reducimos el espacio extra. */
+  #menu ul li:last-child {
+    margin-left: 6px;
+  }
+
+  /* Reducir padding de logo en móviles para evitar empujar items hacia abajo */
+  .logo { padding: 10px; max-width: 48px; height: auto; }
+
+  /* Evitar que la banner image suba y tape controles: dar margen inferior al banner para que no interfiera con header */
+  .banner { margin-top: 0; }
+
+  /* Asegurar que el whatsapp no tape el menú cuando esté visible */
+  #whatsapp { right: 12px; bottom: 12px; }
+}
+/* --------------------- FIN NUEVO BLOQUE portrait --------------------- */
+/* (el resto del archivo sigue igual, incluyendo bloques que ya existían)
+   — el siguiente bloque nuevo fuerza grid en portrait para colocar switch
+     debajo de Créditos sin hacer el logo mini. */
+
+ 
+/* BLOQUE ADICIONAL: switch debajo de Créditos en portrait */
+
+/* PORTRAIT: Forzar que el botón switch quede DEBAJO de 'Créditos' (alineado a la izquierda) */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* Usamos grid para controlar columnas/filas del menú */
+  #menu ul {
+    display: grid !important;
+    grid-template-columns: auto auto;
+    grid-auto-rows: auto;
+    gap: 6px;
+    align-items: center;
+    justify-items: start;
+    width: auto;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Créditos (1er li) - columna 1 fila 1 */
+  #menu ul li:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Contacto (2do li) - columna 2 fila 1 */
+  #menu ul li:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Switch (último li) - debajo de Créditos (columna 1 fila 2) */
+  #menu ul li:last-child {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    margin-left: 0;
+    margin-top: 2px;
+    width: auto;
+  }
+
+  /* Ajustes visuales para el botón switch */
+  .switch {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    margin: 0 !important;
+  }
 }
 
-/* FIN estilo.css */
+/* -----------------------
+   FIX ADICIONAL (SOBRE EL BLOQUE ANTERIOR)
+   - Asegurar que el logo NO sea reducido por otras reglas (preservar tamaño original).
+   - Forzar alineación exacta X entre "Créditos" y el switch: usamos padding-left en UL
+     como origen X común y quitamos padding-left de los enlaces para que empiecen en el mismo punto.
+   ----------------------- */
+#menu .logo,
+#menu a.logo img,
+#menu img.logo {
+  /* preserva tamaño y padding original */
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  padding: 30px !important;
+  box-sizing: content-box;
+}
+
+/* Override final para portrait: aplicar padding-left común y quitar padding-left en <a> */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* padding-left del UL define el 'x origin' para alineamiento */
+  #menu ul {
+    padding-left: 12px !important; 
+    width: calc(100% - 12px) !important;
+    grid-template-columns: auto 1fr !important; /* columna 1 = items a la izquierda, columna 2 = resto */
+    column-gap: 10px !important;
+    row-gap: 4px !important;
+    justify-items: start !important;
+  }
+
+  /* quitar padding-left interno de los enlaces para que arranquen exactamente en padding-left del UL */
+  #menu ul li a {
+    padding-left: 0 !important;
+  }
+
+  /* garantizar que Créditos y switch (col 1) compartan el mismo inicio X */
+  #menu ul li:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: start; }
+  #menu ul li:last-child { grid-column: 1; grid-row: 2; justify-self: start; }
+
+  /* switch estilo final */
+  .switch {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* asegurar que el logo no sea empujado ni redimensionado */
+  .logo { padding: 30px !important; }
+}
