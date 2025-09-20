@@ -728,7 +728,57 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
     border-radius: 28px !important;
     margin: 0 !important;
   }
+}
 
-  /* Mantener tamaño original del logo para no hacerlo 'mini' */
-  #menu > a.logo, #menu > a > img.logo { /* tamaño natural, no forzar */ }
+/* -----------------------
+   FIX ADICIONAL (SOBRE EL BLOQUE ANTERIOR)
+   - Asegurar que el logo NO sea reducido por otras reglas (preservar tamaño original).
+   - Forzar alineación exacta X entre "Créditos" y el switch: usamos padding-left en UL
+     como origen X común y quitamos padding-left de los enlaces para que empiecen en el mismo punto.
+   ----------------------- */
+#menu .logo,
+#menu a.logo img,
+#menu img.logo {
+  /* preserva tamaño y padding original */
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  padding: 30px !important;
+  box-sizing: content-box;
+}
+
+/* Override final para portrait: aplicar padding-left común y quitar padding-left en <a> */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* padding-left del UL define el 'x origin' para alineamiento */
+  #menu ul {
+    padding-left: 12px !important; 
+    width: calc(100% - 12px) !important;
+    grid-template-columns: auto 1fr !important; /* columna 1 = items a la izquierda, columna 2 = resto */
+    column-gap: 10px !important;
+    row-gap: 4px !important;
+    justify-items: start !important;
+  }
+
+  /* quitar padding-left interno de los enlaces para que arranquen exactamente en padding-left del UL */
+  #menu ul li a {
+    padding-left: 0 !important;
+  }
+
+  /* garantizar que Créditos y switch (col 1) compartan el mismo inicio X */
+  #menu ul li:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: start; }
+  #menu ul li:last-child { grid-column: 1; grid-row: 2; justify-self: start; }
+
+  /* switch estilo final */
+  .switch {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* asegurar que el logo no sea empujado ni redimensionado */
+  .logo { padding: 30px !important; }
 }
