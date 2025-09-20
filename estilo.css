@@ -402,7 +402,7 @@ footer .footer2{
 }
 
 /* hover / focus / active */
-.carrito-total a.btn-pagar:hover,
+.carrito-total a.btn-pagar,
 .carrito-total button.btn-pagar:hover {
   transform: scale(1.03);
   box-shadow: 0 12px 28px rgba(0,0,0,0.10);
@@ -673,3 +673,94 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
 }
 /* --------------------- FIN NUEVO BLOQUE portrait --------------------- */
 
+/* ===========================
+   AJUSTES MÓVIL - PORTRAIT (REVISIÓN 2)
+   Forzar alineamiento del botón de modo oscuro ('.switch') cerca de 'Créditos'
+   y evitar que la imagen del body se superponga.
+   =========================== */
+@media screen and (max-width: 600px) and (orientation: portrait) {
+  /* Hacer que el header/menu use espacio horizontal eficiente */
+  #menu {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    height: auto;
+    background: transparent;
+    z-index: 1200;
+  }
+
+  /* Logo reducido para no empujar el resto hacia abajo */
+  #menu > a.logo, #menu > a > img.logo {
+    width: 48px;
+    height: 48px;
+    max-width: 48px;
+    padding: 4px;
+    margin-right: 6px;
+  }
+
+  /* Lista de elementos en una sola línea y centrados verticalmente */
+  #menu ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  #menu ul li {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* enlaces con padding táctil cómodo y tamaño de fuente legible */
+  #menu ul li a {
+    padding: 8px 10px;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  /* Botón switch: quitar el margin-right grande y acercarlo al item anterior */
+  .switch {
+    margin-right: 0 !important;
+    margin-left: 6px !important;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Forzar que el último li (switch) no haga wrap a la siguiente línea */
+  #menu ul li:last-child {
+    margin-left: 6px;
+    flex: 0 0 auto;
+  }
+
+  /* Si el menú tiene muchos items, permitir scroll horizontal en la lista (suave) */
+  #menu ul {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Asegurar que la banner no se superponga: dar espacio top al siguiente contenido */
+  .banner { margin-top: 6px; }
+
+  /* Ajuste adicional: empujar el contenido del body ligeramente para que no tape controles */
+  body { padding-top: 4px; }
+
+  /* Reducir tamaño del whatsapp para no tapar el header */
+  #whatsapp { top: auto; bottom: 12px; right: 12px; width: auto; height: auto; }
+}
+
+/* FIN - AJUSTES MÓVIL PORTRAIT */
