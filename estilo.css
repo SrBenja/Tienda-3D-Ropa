@@ -1,16 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600&family=Titillium+Web:wght@200;300;400;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
 
-/* Evitar scroll horizontal */
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; /* <-- evita la barra horizontal indeseada */
-  font-family: 'Open Sans', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background:#000;
-  color:#fff;
-}
-
 /* --- BOX-SIZING global (seguro, evita sorpresas con padding/widths) --- */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -23,6 +13,7 @@ html, body {
 }
 
 /* Animación logo: unificada duración y respetar prefers-reduced-motion */
+/* -> Elegí 3.5 segundos para que coincida y la animación siga funcionando */
 @-webkit-keyframes rotate { from { -webkit-transform: rotate(0deg); } to { -webkit-transform: rotate(360deg); } }
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -34,6 +25,7 @@ html, body {
     padding: 30px;
 }
 
+/* Si el usuario pide reducir la animación, apagarla */
 @media (prefers-reduced-motion: reduce) {
   .logo {
     -webkit-animation: none !important;
@@ -61,8 +53,10 @@ html, body {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+
 }
 
+/* propiedad específica en mi-boton2 */
 .mi-boton2 { max-height: 50px; }
 
 .mi-boton:hover,
@@ -104,7 +98,6 @@ html, body {
     align-items: center;
     flex-direction: row;
     background-color: #000;
-    /* IMPORTANTE: no esconder overflow en móvil — lo controlamos en mobile rules */
     overflow: hidden;
 }
 #menu ul{ list-style: none; margin: 0; padding: 0; }
@@ -157,6 +150,7 @@ footer .footer2{
     color: white;
 }
 
+/* logo hover */
 .logo:hover{
     border-radius: 50%;
     box-shadow: 0px 0px 15px 15px #db0cae;
@@ -172,7 +166,7 @@ footer .footer2{
     align-items: flex-start;
 }
 
-/* Zona de productos: grid flexible */
+/* Zona de productos: grid flexible que puede encogerse para evitar overflow */
 .contenedor .contenedor-items{
     margin-top: 30px;
     display: grid;
@@ -221,7 +215,7 @@ footer .footer2{
     cursor: pointer;
 }
 
-/* seccion carrito (mejorada y colapsable) */
+/* seccion carrito (mejorada y colapsable; no ocupa espacio cuando está hidden) */
 .carrito{
     border: 1px solid #666;
     flex: 0 0 0;
@@ -256,7 +250,6 @@ footer .footer2{
     opacity: 0;
     pointer-events: none;
     padding: 0;
-    display: none; /* por defecto no se muestra */
 }
 
 /* cabecera carrito */
@@ -267,7 +260,7 @@ footer .footer2{
     padding: 30px 0;
 }
 
-/* item del carrito */
+/* item del carrito: layout en flex y soporte para títulos multilínea */
 .carrito .carrito-item{
     display: flex;
     align-items: flex-start;
@@ -281,7 +274,7 @@ footer .footer2{
     margin-right: 20px;
 }
 
-/* detalles */
+/* detalles (título, selector, precio) — dejar espacio para la papelera */
 .carrito .carrito-item .carrito-item-detalles{
     padding-right: 60px;
     min-width: 0;
@@ -362,13 +355,14 @@ footer .footer2{
     pointer-events: none;
 }
 
-/* total y boton pagar */
+/* total y boton pagar (compatibilidad para <a class="btn-pagar"> o <button class="btn-pagar">) */
 .carrito-total {
   background-color: #f3f3f3;
   padding: 30px;
   border-radius: 6px;
 }
 
+/* fila: total y precio */
 .carrito-total .fila {
   display: flex;
   justify-content: space-between;
@@ -378,6 +372,7 @@ footer .footer2{
   margin-bottom: 10px;
 }
 
+/* botón pagar: aplica tanto a <a> como a <button> */
 .carrito-total a.btn-pagar,
 .carrito-total button.btn-pagar {
   display: flex;
@@ -399,6 +394,7 @@ footer .footer2{
   appearance: none;
 }
 
+/* Asegurar que ningún hijo (i, svg, span) muestre subrayado */
 .carrito-total a.btn-pagar *,
 .carrito-total button.btn-pagar * {
   text-decoration: none !important;
@@ -424,6 +420,7 @@ footer .footer2{
   box-shadow: 0 10px 26px rgba(0,0,0,0.12);
 }
 
+/* Icono dentro del botón (si usas <i> o <svg>) */
 .carrito-total .btn-pagar i,
 .carrito-total .btn-pagar svg {
   margin-left: 12px;
@@ -469,7 +466,9 @@ footer .footer2{
   min-width: 0;
 }
 
-/* SECCION RESPONSIVE */
+/* SECCION RESPONSIVE
+   -> @media 600px; el bloque móvil principal es para 850px y 600px arriba.
+*/
 @media screen and (max-width: 850px) {
     .contenedor { display: block; }
     .contenedor .contenedor-items,
@@ -479,29 +478,18 @@ footer .footer2{
         flex: 0 0 auto;
         width: 100% !important;
         max-width: 100% !important;
-        /* removido: opacity/pointer-events forcados para permitir clases hidden/visible */
+        opacity: 1 !important;
+        pointer-events: auto !important;
         padding: 16px 0 0 0;
     }
 
-    /* En móvil: el carrito oculto no debe mostrarse. Forzamos display:none cuando está hidden */
+    /* en móvil no queremos que colapse: forzamos display:block para evitar alertas del linter */
     .carrito.carrito--hidden {
-      display: none !important;
-      opacity: 0;
-      pointer-events: none;
-      height: 0;
-      padding: 0;
-      margin: 0;
-    }
-
-    .carrito.carrito--visible {
-      display: block !important;
-      opacity: 1;
-      pointer-events: auto;
-      padding: 12px 0 0 0;
+      display: block;
     }
 }
 
-/* WhatsApp: burbuja y icono (mejorado: botón circular, no cortado, responsive y draggable-friendly) */
+/* WhatsApp: burbuja oculta por defecto, visible solo en hover/focus */
 #whatsapp {
   position: fixed;
   bottom: 20px;
@@ -510,36 +498,8 @@ footer .footer2{
   align-items: center;
   gap: 10px;
   z-index: 1000;
-  touch-action: none;             /* para arrastre táctil */
-  -webkit-user-select: none;
-  user-select: none;
-  pointer-events: auto;
 }
 
-/* Botón circular que envuelve el SVG (evita que el icono se "corte") */
-#whatsapp a.whatsapp-btn {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;              /* importante: corta cualquier overflow del SVG */
-  background: #25d366;           /* color WhatsApp */
-  border: 2px solid rgba(0,0,0,0.08);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  text-decoration: none;
-}
-
-/* SVG dentro del botón */
-#whatsapp a.whatsapp-btn svg {
-  width: 40px !important;
-  height: 40px !important;
-  display: block;
-  pointer-events: none;
-}
-
-/* Burbuja de texto (tooltip) */
 #whatsapp .whatsapp-bubble {
   opacity: 0;
   visibility: hidden;
@@ -553,23 +513,17 @@ footer .footer2{
   filter: drop-shadow(0 1px 4px rgba(0,0,0,.4));
   transform: translateY(6px);
   transition: opacity .18s ease, transform .18s ease, visibility .18s;
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  box-sizing: border-box;
 }
 
-/* Mostrar burbuja al hover/focus */
-#whatsapp:hover .whatsapp-bubble,
-#whatsapp:focus-within .whatsapp-bubble {
+/* Selector principal: hover */
+#whatsapp:hover .whatsapp-bubble {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-  pointer-events: auto;
 }
 
-/* focus styles accesible */
+/* === WhatsApp - evitar cuadro azul persistente al hacer clic === */
+/* 1) Mostrar outline solo para usuarios de teclado (focus-visible) */
 #whatsapp a { outline: none; }
 @supports(selector(:focus-visible)) {
   #whatsapp a:focus { outline: none; }
@@ -580,8 +534,10 @@ footer .footer2{
   }
 }
 
-/* Si el selector :has está soportado, mantener burbuja visible cuando el enlace tiene focus-visible */
+
+/* Mejor: también mostrar cuando el enlace recibe foco visible (teclado) — usa :has() si está disponible */
 @supports(selector(:has(*))) {
+  /* Si el navegador soporta :has(), mostramos la burbuja cuando el <a> interno tenga :focus-visible */
   #whatsapp:has(a:focus-visible) .whatsapp-bubble {
     opacity: 1;
     visibility: visible;
@@ -589,55 +545,53 @@ footer .footer2{
   }
 }
 
-/* Forzar color del círculo y path (override) */
-#whatsapp circle { fill: #25d366 !important; }
-#whatsapp path { fill: #ffffff !important; }
+/* El enlace solo rodea el icono (sin padding extra) */
+#whatsapp a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+}
 
-/* Accesibilidad focus global (mantener tus reglas) */
+/* Aseguramos que el SVG reciba clics */
+#whatsapp svg {
+  width: 80px;
+  height: 80px;
+  pointer-events: auto;
+}
+
+/* Evitar highlight táctil molesto en móviles */
+#whatsapp a, #whatsapp a * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* FIX definitivo: asegurar visibilidad del icono WhatsApp (círculo verde + símbolo blanco) */
+#whatsapp { z-index: 1000; }
+
+/* Forzar color del círculo (override incluso si el SVG trae fill inline) */
+#whatsapp circle {
+  fill: #25d366 !important;
+}
+
+/* Forzar que currentColor dentro del SVG sea blanco (para que path con fill="currentColor" se vea) */
+#whatsapp svg {
+  color: #ffffff !important;
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+
+/* Por si el path no estuviera usando currentColor, lo forzamos también */
+#whatsapp path {
+  fill: #ffffff !important;
+}
+
+/* ACCESIBILIDAD: focus visible para botones interactivos (teclado)
+   -> añadí a:focus para enlaces que actúan como botones (ej. .btn-pagar)
+*/
 button:focus, .btn-eliminar:focus, .boton-item:focus, .mi-boton:focus, .mi-boton2:focus,
 a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus {
   outline: 3px solid #318aac;
   outline-offset: 2px;
 }
-
-/* ======================================================================
-   Cambios / mejoras específicas para móvil (aplican solo si ancho <= 600px)
-   ====================================================================== */
-@media screen and (max-width: 600px) {
-
-  /* Menor tamaño del botón circular y del SVG */
-  #whatsapp a.whatsapp-btn {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  }
-  #whatsapp a.whatsapp-btn svg {
-    width: 28px !important;
-    height: 28px !important;
-  }
-
-  /* Posición por defecto algo más pegada al borde en móvil */
-  #whatsapp { bottom: 14px; right: 12px; }
-
-  /* Burbuja más compacta */
-  #whatsapp .whatsapp-bubble {
-    font-size: 13px;
-    padding: 6px 10px;
-    max-width: 160px;
-    white-space: normal; /* permitir wrapping si hace falta en móviles */
-  }
-
-  @supports(selector(:has(*))) {
-    #whatsapp:has(a:focus) .whatsapp-bubble,
-    #whatsapp:has(a:active) .whatsapp-bubble {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-  }
-
-  /* Garantizar touch-action para arrastre */
-  #whatsapp { touch-action: none; -ms-touch-action: none; }
-}
-
