@@ -595,3 +595,81 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
   outline: 3px solid #318aac;
   outline-offset: 2px;
 }
+
+/* -----------------------
+   NUEVO: Ajustes SOLO para MÓVIL EN ORIENTACIÓN VERTICAL (portrait)
+   Objetivo: alinear el botón .switch con el enlace "Créditos" y acercarlo,
+   evitando posiciones demasiado abajo y que la imagen del body se superponga.
+   ----------------------- */
+@media screen and (max-width: 600px) and (orientation: portrait) {
+  /* Hacemos que el menú sea flexible y que sus items se alineen en la misma línea
+     cuando sea posible; si hay wrap, los items estarán centrados verticalmente. */
+  #menu {
+    height: auto;
+    padding: 8px 10px;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1100; /* asegurar que quede por encima de imágenes/banners */
+  }
+
+  /* Convertimos la lista en flex con wrap, para controlar alineamiento */
+  #menu ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  /* Cada li se comporta como inline-flex y centra su contenido verticalmente */
+  #menu ul li {
+    display: inline-flex;
+    align-items: center;
+    height: auto;
+  }
+
+  /* Ajuste para los enlaces dentro del menú (Créditos, Contacto) */
+  #menu ul li a {
+    height: auto;
+    padding: 8px 10px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ajuste específico del botón switch en portrait: menos margin-right y centrado */
+  .switch {
+    margin-right: 0;   /* quitar margen grande del desktop */
+    margin-left: 6px;  /* pequeño espacio respecto al item anterior */
+    padding: 8px 10px;
+    border-radius: 36px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    transform: translateY(0); /* asegurar que esté alineado con el texto */
+    position: relative;
+  }
+
+  /* Si el menú ocupa dos filas por el ancho, forzamos que el switch quede cerca de Créditos:
+     buscamos el último LI (presumiblemente el switch) y reducimos el espacio extra. */
+  #menu ul li:last-child {
+    margin-left: 6px;
+  }
+
+  /* Reducir padding de logo en móviles para evitar empujar items hacia abajo */
+  .logo { padding: 10px; max-width: 48px; height: auto; }
+
+  /* Evitar que la banner image suba y tape controles: dar margen inferior al banner para que no interfiera con header */
+  .banner { margin-top: 0; }
+
+  /* Asegurar que el whatsapp no tape el menú cuando esté visible */
+  #whatsapp { right: 12px; bottom: 12px; }
+}
+/* --------------------- FIN NUEVO BLOQUE portrait --------------------- */
+
