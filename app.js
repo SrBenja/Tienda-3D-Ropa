@@ -2,6 +2,9 @@
 (function(){
   'use strict';
 
+  /* CONFIG: cambiar a true si querés volver a persistir en localStorage */
+  const CART_PERSIST = false;
+
   /* Helpers */
   function parsePriceToInt(text) {
     if (!text) return 0;
@@ -31,13 +34,23 @@
     carritoItemsNode = document.querySelector('.carrito-items');
     totalDisplayNode = document.querySelector('.carrito-precio-total');
 
-    // Limpiar claves temporales de checkout al cargar la página principal
+    // Si no queremos persistencia: limpiar cualquier rastro previo en localStorage/sessionStorage
+    if (!CART_PERSIST) {
+      try {
+        localStorage.removeItem('carrito');
+        localStorage.removeItem('carrito_ts');
+        localStorage.removeItem('carrito_for_checkout');
+        sessionStorage.removeItem('checkout_cart');
+      } catch (e) { /* silenciar */ }
+    }
+
+    // Limpiar claves temporales de checkout al cargar la página principal (seguimos haciendo esto)
     try {
       sessionStorage.removeItem('checkout_cart');
-      localStorage.removeItem('carrito_for_checkout');
+      // no eliminamos carrito_for_checkout aquí si CART_PERSIST true; si false ya lo borramos arriba
     } catch(e) {}
 
-    // Restaurar carrito desde storage (si existiera)
+    // Restaurar carrito desde storage solo si CART_PERSIST = true
     restaurarCarritoDesdeStorage();
 
     // Inicializar visibilidad del carrito:
@@ -120,7 +133,7 @@
       totalDisplayNode.textContent = formatWithSpaces(t) + ' $';
     }
 
-    // asegurar persistencia si se cierra la pestaña
+    // asegurar persistencia si se cierra la pestaña (si CART_PERSIST=true)
     window.addEventListener('beforeunload', function(){ try{ persistirCarrito(); }catch(e){} });
 
     // Soporte teclado: Enter / Space para elementos con role="button"
@@ -275,8 +288,10 @@
     try { sessionStorage.removeItem('checkout_cart'); localStorage.removeItem('carrito_for_checkout'); } catch(e){}
   }
 
-  /* Persistencia: serializa carrito en localStorage (key 'carrito') */
+  /* Persistencia: serializa carrito en localStorage (key 'carrito')
+     Si CART_PERSIST === false la función no hará nada (no persiste). */
   function persistirCarrito() {
+    if (!CART_PERSIST) return; // NO persistir si la config lo desactiva
     try {
       const cont = carritoItemsNode || document.querySelector('.carrito-items');
       if (!cont) return;
@@ -338,6 +353,7 @@
   /* PREPARAR CHECKOUT (temporal)
      - escribe sessionStorage['checkout_cart'] y localStorage['carrito_for_checkout']
      - usado justo antes de navegar a compra.html
+     Si CART_PERSIST === false, aún así guardamos estos datos local/session para la página de checkout.
   */
   function prepareCheckout() {
     try {
@@ -389,8 +405,10 @@
     } catch(e){}
   }
 
-  /* Restaurar carrito desde localStorage (si hay data) */
+  /* Restaurar carrito desde localStorage (si hay data)
+     SOLO se ejecuta si CART_PERSIST === true. */
   function restaurarCarritoDesdeStorage() {
+    if (!CART_PERSIST) return;
     try {
       const raw = localStorage.getItem('carrito');
       if (!raw) return;
@@ -444,12 +462,15 @@
 })();
 
 
-// ==== WhatsApp: quitar foco tras clic/touch para evitar cuadro azul persistente ====
+// ==== WhatsApp: safeBlur global + draggable solo en móvil (max-width:850px) ====
 (function(){
+  'use strict';
+
   function safeBlur(el){
     try{ el && el.blur(); }catch(e){}
   }
 
+  // Blur para evitar outline azul persistente — lo dejamos global.
   document.addEventListener('pointerdown', function(ev){
     var a = ev.target && ev.target.closest ? ev.target.closest('#whatsapp a') : null;
     if(a){
@@ -459,4 +480,129 @@
 
   window.addEventListener('pageshow', function(){ safeBlur(document.querySelector('#whatsapp a')); });
   window.addEventListener('load', function(){ safeBlur(document.querySelector('#whatsapp a')); });
+
+  // Draggable behaviour: activado SOLO en mobile (max-width:850px)
+  const WA_MQ = '(max-width: 850px)';
+  const wa = document.querySelector('#whatsapp');
+  if (!wa) return;
+
+  // Variables para controlar estado del draggable y referencias a handlers
+  let dragging = false;
+  let currentPointerId = null;
+  let startX = 0, startY = 0, elemStartLeft = 0, elemStartTop = 0;
+  let enabled = false;
+
+  // Handlers (declarados como funciones con nombre para poder removerlos)
+  function handlePointerDown(e) {
+    if (e.button && e.button !== 0) return;
+    dragging = true;
+    currentPointerId = e.pointerId;
+    wa.classList.add('dragging');
+    try { wa.setPointerCapture(e.pointerId); } catch(err){}
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = wa.getBoundingClientRect();
+    elemStartLeft = rect.left;
+    elemStartTop = rect.top;
+    // permitir movimiento por left/top
+    wa.style.right = 'auto';
+    wa.style.bottom = 'auto';
+    wa.style.left = (elemStartLeft) + 'px';
+    wa.style.top = (elemStartTop) + 'px';
+    e.preventDefault();
+  }
+
+  function handlePointerMove(e) {
+    if (!dragging || e.pointerId !== currentPointerId) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    let newLeft = elemStartLeft + dx;
+    let newTop = elemStartTop + dy;
+    // clamp
+    const w = wa.offsetWidth;
+    const h = wa.offsetHeight;
+    const maxLeft = Math.max(0, window.innerWidth - w);
+    const maxTop = Math.max(0, window.innerHeight - h);
+    newLeft = Math.min(Math.max(0, newLeft), maxLeft);
+    newTop = Math.min(Math.max(0, newTop), maxTop);
+    wa.style.left = Math.round(newLeft) + 'px';
+    wa.style.top = Math.round(newTop) + 'px';
+  }
+
+  function handlePointerUp(e) {
+    if (!dragging || e.pointerId !== currentPointerId) return;
+    dragging = false;
+    currentPointerId = null;
+    wa.classList.remove('dragging');
+    try { wa.releasePointerCapture && wa.releasePointerCapture(e.pointerId); } catch(err){}
+  }
+
+  function enableDraggable() {
+    if (enabled) return;
+    wa.style.position = wa.style.position || 'fixed';
+    if (!wa.hasAttribute('tabindex')) wa.setAttribute('tabindex', '0');
+    wa.addEventListener('pointerdown', handlePointerDown, { passive: false });
+    document.addEventListener('pointermove', handlePointerMove, { passive: true });
+    document.addEventListener('pointerup', handlePointerUp, { passive: true });
+    document.addEventListener('pointercancel', handlePointerUp, { passive: true });
+    // doble click para resetear
+    wa.addEventListener('dblclick', resetPositionHandler);
+    enabled = true;
+  }
+
+  function disableDraggable() {
+    if (!enabled) return;
+    wa.removeEventListener('pointerdown', handlePointerDown, { passive: false });
+    document.removeEventListener('pointermove', handlePointerMove, { passive: true });
+    document.removeEventListener('pointerup', handlePointerUp, { passive: true });
+    document.removeEventListener('pointercancel', handlePointerUp, { passive: true });
+    wa.removeEventListener('dblclick', resetPositionHandler);
+    // Restablecer a esquina inferior derecha (comportamiento desktop)
+    wa.style.left = 'auto';
+    wa.style.top = 'auto';
+    wa.style.right = '12px';
+    wa.style.bottom = '12px';
+    wa.classList.remove('dragging');
+    enabled = false;
+  }
+
+  function resetPositionHandler() {
+    wa.style.left = 'auto';
+    wa.style.top = 'auto';
+    wa.style.right = '12px';
+    wa.style.bottom = '12px';
+  }
+
+  // Inicial: activar/desactivar según media query
+  function handleMqChange(e) {
+    if (e.matches) enableDraggable();
+    else disableDraggable();
+  }
+
+  try {
+    const mql = window.matchMedia ? window.matchMedia(WA_MQ) : null;
+    if (mql) {
+      // activar según estado actual
+      if (mql.matches) enableDraggable();
+      // escuchar cambios futuros
+      if (typeof mql.addEventListener === 'function') {
+        mql.addEventListener('change', handleMqChange);
+      } else if (typeof mql.addListener === 'function') {
+        mql.addListener(handleMqChange);
+      }
+      // también escuchar resize como fallback
+      window.addEventListener('resize', function(){
+        if (mql.matches) enableDraggable(); else disableDraggable();
+      });
+    } else {
+      // si no hay matchMedia, como fallback basarnos en innerWidth
+      if (window.innerWidth <= 850) enableDraggable();
+      window.addEventListener('resize', function(){
+        if (window.innerWidth <= 850) enableDraggable(); else disableDraggable();
+      });
+    }
+  } catch(e){
+    // si algo falla, no rompemos la página: dejamos solo safeBlur intacto.
+  }
+
 })();
