@@ -462,15 +462,16 @@
 })();
 
 
-// ==== WhatsApp: safeBlur global + draggable solo en móvil (max-width:850px) ====
+// ==== WhatsApp: safeBlur global + long-press draggable SOLO en móvil (no cambia tamaño) ====
 (function(){
   'use strict';
 
+  // helpers
   function safeBlur(el){
     try{ el && el.blur(); }catch(e){}
   }
 
-  // Blur para evitar outline azul persistente — lo dejamos global.
+  // evitar cuadro azul persistente al tocar
   document.addEventListener('pointerdown', function(ev){
     var a = ev.target && ev.target.closest ? ev.target.closest('#whatsapp a') : null;
     if(a){
@@ -481,128 +482,259 @@
   window.addEventListener('pageshow', function(){ safeBlur(document.querySelector('#whatsapp a')); });
   window.addEventListener('load', function(){ safeBlur(document.querySelector('#whatsapp a')); });
 
-  // Draggable behaviour: activado SOLO en mobile (max-width:850px)
-  const WA_MQ = '(max-width: 850px)';
+  /* ---------- Long-press + drag behavior (mobile only) ---------- */
+  const WA_KEY = 'wa_pos_v1'; // sessionStorage key for position
+  const WA_MQ = '(max-width: 850px)'; // límite móvil
+  const LONG_PRESS_MS = 350; // mantener para activar el arrastre
+  const MOVE_CANCEL_THRESHOLD = 10; // px de movimiento que cancela el long-press
   const wa = document.querySelector('#whatsapp');
   if (!wa) return;
 
-  // Variables para controlar estado del draggable y referencias a handlers
-  let dragging = false;
-  let currentPointerId = null;
-  let startX = 0, startY = 0, elemStartLeft = 0, elemStartTop = 0;
   let enabled = false;
+  let longPressTimer = null;
+  let pointerId = null;
+  let startClientX = 0, startClientY = 0;
+  let elemStartLeft = 0, elemStartTop = 0;
+  let dragging = false;
+  let suppressClick = false;
 
-  // Handlers (declarados como funciones con nombre para poder removerlos)
-  function handlePointerDown(e) {
-    if (e.button && e.button !== 0) return;
-    dragging = true;
-    currentPointerId = e.pointerId;
-    wa.classList.add('dragging');
-    try { wa.setPointerCapture(e.pointerId); } catch(err){}
-    startX = e.clientX;
-    startY = e.clientY;
-    const rect = wa.getBoundingClientRect();
-    elemStartLeft = rect.left;
-    elemStartTop = rect.top;
-    // permitir movimiento por left/top
-    wa.style.right = 'auto';
-    wa.style.bottom = 'auto';
-    wa.style.left = (elemStartLeft) + 'px';
-    wa.style.top = (elemStartTop) + 'px';
-    e.preventDefault();
-  }
-
-  function handlePointerMove(e) {
-    if (!dragging || e.pointerId !== currentPointerId) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    let newLeft = elemStartLeft + dx;
-    let newTop = elemStartTop + dy;
-    // clamp
+  // clamp a la ventana para que no desaparezca
+  function clampPosition(left, top) {
     const w = wa.offsetWidth;
     const h = wa.offsetHeight;
     const maxLeft = Math.max(0, window.innerWidth - w);
     const maxTop = Math.max(0, window.innerHeight - h);
-    newLeft = Math.min(Math.max(0, newLeft), maxLeft);
-    newTop = Math.min(Math.max(0, newTop), maxTop);
-    wa.style.left = Math.round(newLeft) + 'px';
-    wa.style.top = Math.round(newTop) + 'px';
+    const clampedLeft = Math.min(Math.max(0, Math.round(left)), maxLeft);
+    const clampedTop = Math.min(Math.max(0, Math.round(top)), maxTop);
+    return { left: clampedLeft, top: clampedTop };
   }
 
-  function handlePointerUp(e) {
-    if (!dragging || e.pointerId !== currentPointerId) return;
+  // aplicar posición en px (usa left/top; limpia right/bottom)
+  function applyPosition(left, top) {
+    wa.style.left = left + 'px';
+    wa.style.top = top + 'px';
+    wa.style.right = 'auto';
+    wa.style.bottom = 'auto';
+  }
+
+  // guardar en sessionStorage (persistencia por sesión)
+  function savePosition(left, top) {
+    try {
+      sessionStorage.setItem(WA_KEY, JSON.stringify({ left: left, top: top }));
+    } catch(e){}
+  }
+
+  function restorePositionIfAny() {
+    try {
+      const raw = sessionStorage.getItem(WA_KEY);
+      if (!raw) return false;
+      const obj = JSON.parse(raw);
+      if (!obj || typeof obj.left !== 'number' || typeof obj.top !== 'number') return false;
+      const clamped = clampPosition(obj.left, obj.top);
+      applyPosition(clamped.left, clamped.top);
+      return true;
+    } catch(e){
+      return false;
+    }
+  }
+
+  function resetToCorner() {
+    // restablecer esquina inferior derecha con offset 12px (comportamiento por defecto)
+    wa.style.left = 'auto';
+    wa.style.top = 'auto';
+    wa.style.right = '12px';
+    wa.style.bottom = '12px';
+    try { sessionStorage.removeItem(WA_KEY); } catch(e){}
+  }
+
+  function startDrag() {
+    if (dragging) return;
+    dragging = true;
+    suppressClick = true;
+    wa.classList.add('dragging');
+    // evitar gestos de scroll mientras arrastramos
+    wa.style.touchAction = 'none';
+    try {
+      if (pointerId != null) wa.setPointerCapture(pointerId);
+    } catch(e){}
+  }
+
+  function endDrag() {
+    if (!dragging) return;
     dragging = false;
-    currentPointerId = null;
     wa.classList.remove('dragging');
-    try { wa.releasePointerCapture && wa.releasePointerCapture(e.pointerId); } catch(err){}
+    wa.style.touchAction = '';
+    try {
+      if (pointerId != null) wa.releasePointerCapture && wa.releasePointerCapture(pointerId);
+    } catch(e){}
+    // guardar posición actual
+    const rect = wa.getBoundingClientRect();
+    const clamped = clampPosition(rect.left, rect.top);
+    applyPosition(clamped.left, clamped.top);
+    savePosition(clamped.left, clamped.top);
+    // evitar que el click inmediato que sigue (por pointerup) abra el enlace
+    setTimeout(()=>{ suppressClick = false; }, 0);
   }
 
-  function enableDraggable() {
+  // pointer handlers
+  function onPointerDown(e) {
+    // solo en mobile por matchMedia y evitar mouse en desktop
+    if (!window.matchMedia || !window.matchMedia(WA_MQ).matches) return;
+    if (e.pointerType === 'mouse') return; // evitar activar con mouse (desktop)
+    // solo iniciar si el pointer se originó sobre el whatsapp (o su hijo)
+    if (!e.target || !wa.contains(e.target)) return;
+
+    // store baseline
+    pointerId = e.pointerId;
+    startClientX = e.clientX;
+    startClientY = e.clientY;
+    const rect = wa.getBoundingClientRect();
+    elemStartLeft = rect.left;
+    elemStartTop = rect.top;
+
+    // preparar long-press
+    longPressTimer = setTimeout(function(){
+      longPressTimer = null;
+      startDrag();
+    }, LONG_PRESS_MS);
+
+    // attach pointer capture on pointerup/startDrag stage (startDrag tries to setPointerCapture)
+    // prevent default only when drag actually starts, to preserve short-tap behaviour
+  }
+
+  function onPointerMove(e) {
+    // if pointer moved significantly before long-press -> cancel long-press
+    if (!dragging && longPressTimer && e.pointerId === pointerId) {
+      const dx = Math.abs(e.clientX - startClientX);
+      const dy = Math.abs(e.clientY - startClientY);
+      if (dx > MOVE_CANCEL_THRESHOLD || dy > MOVE_CANCEL_THRESHOLD) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    }
+
+    // dragging: update position
+    if (dragging && e.pointerId === pointerId) {
+      const dx = e.clientX - startClientX;
+      const dy = e.clientY - startClientY;
+      const newLeft = elemStartLeft + dx;
+      const newTop = elemStartTop + dy;
+      const clamped = clampPosition(newLeft, newTop);
+      applyPosition(clamped.left, clamped.top);
+      // no guardarse continuamente, se guardará en endDrag
+    }
+  }
+
+  function onPointerUp(e) {
+    // cancel long-press if pending
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+
+    // if we were dragging, finish
+    if (dragging && e.pointerId === pointerId) {
+      endDrag();
+    }
+
+    pointerId = null;
+  }
+
+  // evitar que el click posterior al drag abra el enlace
+  function onClickAnchor(e) {
+    if (suppressClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      suppressClick = false;
+      return false;
+    }
+    return true;
+  }
+
+  // activar/desactivar según matchMedia
+  function enableBehaviour() {
     if (enabled) return;
-    wa.style.position = wa.style.position || 'fixed';
-    if (!wa.hasAttribute('tabindex')) wa.setAttribute('tabindex', '0');
-    wa.addEventListener('pointerdown', handlePointerDown, { passive: false });
-    document.addEventListener('pointermove', handlePointerMove, { passive: true });
-    document.addEventListener('pointerup', handlePointerUp, { passive: true });
-    document.addEventListener('pointercancel', handlePointerUp, { passive: true });
-    // doble click para resetear
-    wa.addEventListener('dblclick', resetPositionHandler);
+    // restore pos if any
+    const restored = restorePositionIfAny();
+    if (!restored) {
+      // dejar comportamiento por defecto (esquina) — no tocar
+      // but ensure right/bottom set if absent
+      if (!wa.style.left && !wa.style.top) {
+        wa.style.right = wa.style.right || '12px';
+        wa.style.bottom = wa.style.bottom || '12px';
+      }
+    }
+    // listeners
+    wa.addEventListener('pointerdown', onPointerDown, { passive: true });
+    document.addEventListener('pointermove', onPointerMove, { passive: true });
+    document.addEventListener('pointerup', onPointerUp, { passive: true });
+    document.addEventListener('pointercancel', onPointerUp, { passive: true });
+    // click suppression on the anchor inside wa
+    const anchor = wa.querySelector('a');
+    if (anchor) anchor.addEventListener('click', onClickAnchor, true);
+    // keep enabled
     enabled = true;
   }
 
-  function disableDraggable() {
+  function disableBehaviour() {
     if (!enabled) return;
-    wa.removeEventListener('pointerdown', handlePointerDown, { passive: false });
-    document.removeEventListener('pointermove', handlePointerMove, { passive: true });
-    document.removeEventListener('pointerup', handlePointerUp, { passive: true });
-    document.removeEventListener('pointercancel', handlePointerUp, { passive: true });
-    wa.removeEventListener('dblclick', resetPositionHandler);
-    // Restablecer a esquina inferior derecha (comportamiento desktop)
-    wa.style.left = 'auto';
-    wa.style.top = 'auto';
-    wa.style.right = '12px';
-    wa.style.bottom = '12px';
-    wa.classList.remove('dragging');
+    try {
+      wa.removeEventListener('pointerdown', onPointerDown, { passive: true });
+      document.removeEventListener('pointermove', onPointerMove, { passive: true });
+      document.removeEventListener('pointerup', onPointerUp, { passive: true });
+      document.removeEventListener('pointercancel', onPointerUp, { passive: true });
+      const anchor = wa.querySelector('a');
+      if (anchor) anchor.removeEventListener('click', onClickAnchor, true);
+    } catch(e){}
+    // restore to default corner unless a saved pos exists (we keep saved pos but reset css)
+    const raw = sessionStorage.getItem(WA_KEY);
+    if (!raw) {
+      resetToCorner();
+    } else {
+      // make sure saved pos is clamped on current viewport
+      restorePositionIfAny();
+    }
     enabled = false;
   }
 
-  function resetPositionHandler() {
-    wa.style.left = 'auto';
-    wa.style.top = 'auto';
-    wa.style.right = '12px';
-    wa.style.bottom = '12px';
+  // on MQ change
+  function handleMqChange(mq) {
+    if (mq.matches) enableBehaviour(); else disableBehaviour();
   }
 
-  // Inicial: activar/desactivar según media query
-  function handleMqChange(e) {
-    if (e.matches) enableDraggable();
-    else disableDraggable();
-  }
-
+  // init
   try {
-    const mql = window.matchMedia ? window.matchMedia(WA_MQ) : null;
-    if (mql) {
-      // activar según estado actual
-      if (mql.matches) enableDraggable();
-      // escuchar cambios futuros
+    if (window.matchMedia) {
+      const mql = window.matchMedia(WA_MQ);
+      // initial
+      if (mql.matches) enableBehaviour();
+      else disableBehaviour();
+      // listen changes
       if (typeof mql.addEventListener === 'function') {
-        mql.addEventListener('change', handleMqChange);
+        mql.addEventListener('change', e => handleMqChange(e));
       } else if (typeof mql.addListener === 'function') {
         mql.addListener(handleMqChange);
       }
-      // también escuchar resize como fallback
-      window.addEventListener('resize', function(){
-        if (mql.matches) enableDraggable(); else disableDraggable();
-      });
     } else {
-      // si no hay matchMedia, como fallback basarnos en innerWidth
-      if (window.innerWidth <= 850) enableDraggable();
+      // fallback based on width
+      if (window.innerWidth <= 850) enableBehaviour();
       window.addEventListener('resize', function(){
-        if (window.innerWidth <= 850) enableDraggable(); else disableDraggable();
+        if (window.innerWidth <= 850) enableBehaviour(); else disableBehaviour();
       });
     }
   } catch(e){
-    // si algo falla, no rompemos la página: dejamos solo safeBlur intacto.
+    // no romper la página si algo falla
   }
+
+  // Asegurar que al cambiar tamaño/orientación la posición se re-clamp y no desaparezca
+  window.addEventListener('orientationchange', function(){
+    // si hay posición guardada, reaplicar y clmap
+    restorePositionIfAny();
+  });
+
+  window.addEventListener('resize', function(){
+    // si tenemos pos guardada, re-clamp
+    restorePositionIfAny();
+  });
 
 })();
