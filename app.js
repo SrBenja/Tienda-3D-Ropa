@@ -462,7 +462,7 @@
 })();
 
 
-// ==== WhatsApp: safeBlur global + long-press draggable SOLO en móvil (no cambia tamaño) ====
+// ==== WhatsApp: safeBlur global + long-press draggable SOLO en móvil (mejorado) ====
 (function(){
   'use strict';
 
@@ -482,8 +482,8 @@
   window.addEventListener('pageshow', function(){ safeBlur(document.querySelector('#whatsapp a')); });
   window.addEventListener('load', function(){ safeBlur(document.querySelector('#whatsapp a')); });
 
-  /* ---------- Long-press + drag behavior (mobile only) ---------- */
-  const WA_KEY = 'wa_pos_v1'; // sessionStorage key for position
+  /* ---------- Long-press + drag behavior (mobile only) - Mejorado ---------- */
+  const WA_KEY = 'wa_pos_v2'; // sessionStorage key for position (v2: includes percents)
   const WA_MQ = '(max-width: 850px)'; // límite móvil
   const LONG_PRESS_MS = 350; // mantener para activar el arrastre
   const MOVE_CANCEL_THRESHOLD = 10; // px de movimiento que cancela el long-press
@@ -497,6 +497,7 @@
   let elemStartLeft = 0, elemStartTop = 0;
   let dragging = false;
   let suppressClick = false;
+  let contextMenuHandler = null;
 
   // clamp a la ventana para que no desaparezca
   function clampPosition(left, top) {
@@ -511,26 +512,54 @@
 
   // aplicar posición en px (usa left/top; limpia right/bottom)
   function applyPosition(left, top) {
+    wa.style.position = wa.style.position || 'fixed';
     wa.style.left = left + 'px';
     wa.style.top = top + 'px';
     wa.style.right = 'auto';
     wa.style.bottom = 'auto';
   }
 
-  // guardar en sessionStorage (persistencia por sesión)
+  // guardar en sessionStorage (persistencia por sesión) — guardamos píxeles y porcentajes
   function savePosition(left, top) {
     try {
-      sessionStorage.setItem(WA_KEY, JSON.stringify({ left: left, top: top }));
+      const w = wa.offsetWidth;
+      const h = wa.offsetHeight;
+      const availW = Math.max(1, window.innerWidth - w);
+      const availH = Math.max(1, window.innerHeight - h);
+      const percentLeft = availW > 0 ? left / availW : 0;
+      const percentTop = availH > 0 ? top / availH : 0;
+      const payload = {
+        left: left,
+        top: top,
+        percentLeft: Math.min(Math.max(0, percentLeft), 1),
+        percentTop: Math.min(Math.max(0, percentTop), 1),
+        vw: window.innerWidth,
+        vh: window.innerHeight,
+        ts: Date.now()
+      };
+      sessionStorage.setItem(WA_KEY, JSON.stringify(payload));
     } catch(e){}
   }
 
+  // restore: preferir percent-based recalculation para rotaciones
   function restorePositionIfAny() {
     try {
       const raw = sessionStorage.getItem(WA_KEY);
       if (!raw) return false;
       const obj = JSON.parse(raw);
-      if (!obj || typeof obj.left !== 'number' || typeof obj.top !== 'number') return false;
-      const clamped = clampPosition(obj.left, obj.top);
+      if (!obj) return false;
+
+      const w = wa.offsetWidth;
+      const h = wa.offsetHeight;
+      const availW = Math.max(0, window.innerWidth - w);
+      const availH = Math.max(0, window.innerHeight - h);
+
+      let left = typeof obj.percentLeft === 'number' ? Math.round((availW) * obj.percentLeft) : (typeof obj.left === 'number' ? obj.left : null);
+      let top  = typeof obj.percentTop === 'number'  ? Math.round((availH) * obj.percentTop)  : (typeof obj.top === 'number'  ? obj.top  : null);
+
+      if (left === null || top === null) return false;
+
+      const clamped = clampPosition(left, top);
       applyPosition(clamped.left, clamped.top);
       return true;
     } catch(e){
@@ -555,7 +584,7 @@
     // evitar gestos de scroll mientras arrastramos
     wa.style.touchAction = 'none';
     try {
-      if (pointerId != null) wa.setPointerCapture(pointerId);
+      if (pointerId != null && wa.setPointerCapture) wa.setPointerCapture(pointerId);
     } catch(e){}
   }
 
@@ -565,15 +594,20 @@
     wa.classList.remove('dragging');
     wa.style.touchAction = '';
     try {
-      if (pointerId != null) wa.releasePointerCapture && wa.releasePointerCapture(pointerId);
+      if (pointerId != null && wa.releasePointerCapture) wa.releasePointerCapture(pointerId);
     } catch(e){}
-    // guardar posición actual
+    // guardar posición actual (clamped)
     const rect = wa.getBoundingClientRect();
     const clamped = clampPosition(rect.left, rect.top);
     applyPosition(clamped.left, clamped.top);
     savePosition(clamped.left, clamped.top);
+    // quitar listener contextmenu agregado en pointerdown (si existe)
+    if (contextMenuHandler) {
+      wa.removeEventListener('contextmenu', contextMenuHandler, true);
+      contextMenuHandler = null;
+    }
     // evitar que el click inmediato que sigue (por pointerup) abra el enlace
-    setTimeout(()=>{ suppressClick = false; }, 0);
+    setTimeout(()=>{ suppressClick = false; }, 350);
   }
 
   // pointer handlers
@@ -592,14 +626,27 @@
     elemStartLeft = rect.left;
     elemStartTop = rect.top;
 
+    // agregar handler contextmenu para bloquear el menú nativo (se quita en pointerup/endDrag)
+    contextMenuHandler = function(ev) {
+      // si estamos en fase de long-press o arrastre, evitar menú contextual
+      ev.preventDefault();
+      ev.stopPropagation && ev.stopPropagation();
+      return false;
+    };
+    wa.addEventListener('contextmenu', contextMenuHandler, true);
+
     // preparar long-press
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
     longPressTimer = setTimeout(function(){
       longPressTimer = null;
+      // iniciar arrastre
       startDrag();
     }, LONG_PRESS_MS);
 
-    // attach pointer capture on pointerup/startDrag stage (startDrag tries to setPointerCapture)
-    // prevent default only when drag actually starts, to preserve short-tap behaviour
+    // Nota: NO prevenimos el default del pointerdown aquí (dejamos taps normales funcionar).
   }
 
   function onPointerMove(e) {
@@ -635,6 +682,12 @@
     // if we were dragging, finish
     if (dragging && e.pointerId === pointerId) {
       endDrag();
+    } else {
+      // not dragging: still remove temporary contextmenu handler if any
+      if (contextMenuHandler) {
+        wa.removeEventListener('contextmenu', contextMenuHandler, true);
+        contextMenuHandler = null;
+      }
     }
 
     pointerId = null;
@@ -654,32 +707,31 @@
   // activar/desactivar según matchMedia
   function enableBehaviour() {
     if (enabled) return;
-    // restore pos if any
+    // restore pos if any (percent-based)
     const restored = restorePositionIfAny();
     if (!restored) {
       // dejar comportamiento por defecto (esquina) — no tocar
-      // but ensure right/bottom set if absent
       if (!wa.style.left && !wa.style.top) {
         wa.style.right = wa.style.right || '12px';
         wa.style.bottom = wa.style.bottom || '12px';
       }
     }
     // listeners
-    wa.addEventListener('pointerdown', onPointerDown, { passive: true });
+    // pointerdown: importante no usar passive:true para poder controlar contextmenu si fuera necesario
+    wa.addEventListener('pointerdown', onPointerDown, false);
     document.addEventListener('pointermove', onPointerMove, { passive: true });
     document.addEventListener('pointerup', onPointerUp, { passive: true });
     document.addEventListener('pointercancel', onPointerUp, { passive: true });
     // click suppression on the anchor inside wa
     const anchor = wa.querySelector('a');
     if (anchor) anchor.addEventListener('click', onClickAnchor, true);
-    // keep enabled
     enabled = true;
   }
 
   function disableBehaviour() {
     if (!enabled) return;
     try {
-      wa.removeEventListener('pointerdown', onPointerDown, { passive: true });
+      wa.removeEventListener('pointerdown', onPointerDown, false);
       document.removeEventListener('pointermove', onPointerMove, { passive: true });
       document.removeEventListener('pointerup', onPointerUp, { passive: true });
       document.removeEventListener('pointercancel', onPointerUp, { passive: true });
@@ -728,7 +780,7 @@
 
   // Asegurar que al cambiar tamaño/orientación la posición se re-clamp y no desaparezca
   window.addEventListener('orientationchange', function(){
-    // si hay posición guardada, reaplicar y clmap
+    // si hay posición guardada, reaplicar y clamp
     restorePositionIfAny();
   });
 
