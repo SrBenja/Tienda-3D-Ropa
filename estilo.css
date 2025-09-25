@@ -485,7 +485,7 @@ footer .footer2{
 
     /* en móvil no queremos que colapse: forzamos display:block para evitar alertas del linter */
     .carrito.carrito--hidden {
-      display: none !important;
+      display: block;
     }
 }
 
@@ -500,7 +500,6 @@ footer .footer2{
   z-index: 1000;
 }
 
-/* La burbuja: reglas por defecto */
 #whatsapp .whatsapp-bubble {
   opacity: 0;
   visibility: hidden;
@@ -514,7 +513,6 @@ footer .footer2{
   filter: drop-shadow(0 1px 4px rgba(0,0,0,.4));
   transform: translateY(6px);
   transition: opacity .18s ease, transform .18s ease, visibility .18s;
-  box-sizing: border-box;
 }
 
 /* Selector principal: hover */
@@ -536,7 +534,7 @@ footer .footer2{
   }
 }
 
-/* Mejor: también mostrar cuando el enlace recibe foco visible (teclado) — usa :has() si está disponible */
+
 @supports(selector(:has(*))) {
   /* Si el navegador soporta :has(), mostramos la burbuja cuando el <a> interno tenga :focus-visible */
   #whatsapp:has(a:focus-visible) .whatsapp-bubble {
@@ -560,7 +558,6 @@ footer .footer2{
   width: 80px;
   height: 80px;
   pointer-events: auto;
-  display: block;
 }
 
 /* Evitar highlight táctil molesto en móviles */
@@ -673,47 +670,205 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
   /* Asegurar que el whatsapp no tape el menú cuando esté visible */
   #whatsapp { right: 12px; bottom: 12px; }
 }
-/* (resto del archivo igual al anterior: bloques ya existentes e integrados) */
+
+/* BLOQUE ADICIONAL: switch debajo de Créditos en portrait */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* Usamos grid para controlar columnas/filas del menú */
+  #menu ul {
+    display: grid !important;
+    grid-template-columns: auto auto;
+    grid-auto-rows: auto;
+    gap: 6px;
+    align-items: center;
+    justify-items: start;
+    width: auto;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Créditos (1er li) - columna 1 fila 1 */
+  #menu ul li:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Contacto (2do li) - columna 2 fila 1 */
+  #menu ul li:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Switch (último li) - debajo de Créditos (columna 1 fila 2) */
+  #menu ul li:last-child {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    margin-left: 0;
+    margin-top: 2px;
+    width: auto;
+  }
+
+  /* Ajustes visuales para el botón switch */
+  .switch {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    margin: 0 !important;
+  }
+}
+
+/* -----------------------
+   FIX ADICIONAL (SOBRE EL BLOQUE ANTERIOR)
+   - Asegurar que el logo NO sea reducido por otras reglas (preservar tamaño original).
+   - Forzar alineación exacta X entre "Créditos" y el switch: usamos padding-left en UL
+     como origen X común y quitamos padding-left de los enlaces para que arranquen en el mismo punto.
+   ----------------------- */
+#menu .logo,
+#menu a.logo img,
+#menu img.logo {
+  /* preserva tamaño y padding original */
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  padding: 30px !important;
+  box-sizing: content-box;
+}
+
+/* Override final para portrait: aplicar padding-left común y quitar padding-left en <a> */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* padding-left del UL define el 'x origin' para alineamiento */
+  #menu ul {
+    padding-left: 12px !important; 
+    width: calc(100% - 12px) !important;
+    grid-template-columns: auto 1fr !important; /* columna 1 = items a la izquierda, columna 2 = resto */
+    column-gap: 10px !important;
+    row-gap: 4px !important;
+    justify-items: start !important;
+  }
+
+  /* quitar padding-left interno de los enlaces para que arranquen exactamente en padding-left del UL */
+  #menu ul li a {
+    padding-left: 0 !important;
+  }
+
+  /* garantizar que Créditos y switch (col 1) compartan el mismo inicio X */
+  #menu ul li:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: start; }
+  #menu ul li:last-child { grid-column: 1; grid-row: 2; justify-self: start; }
+
+  /* switch estilo final */
+  .switch {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* asegurar que el logo no sea empujado ni redimensionado */
+  .logo { padding: 30px !important; }
+}
+
+/* -----------------------
+   Reglas extra para móvil que ayudan al arrastre (cursor visual)
+   Solo visual, no cambian tamaño del icono.
+*/
+@media screen and (max-width: 850px) {
+  #whatsapp.dragging { cursor: grabbing; touch-action: none; }
+  #whatsapp { -webkit-tap-highlight-color: transparent; }
+
+  /* Evitar que la burbuja cambie de forma inesperadamente: mantener nowrap y un min-width.
+     Además limitar ancho máximo para pantallas pequeñas. */
+  #whatsapp .whatsapp-bubble {
+    white-space: nowrap;
+    min-width: 120px;
+    max-width: calc(100% - 40px);
+  }
+
+  /* Hint (mensaje temporal) */
+  .wa-drag-hint {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 110px; /* por encima del Whatsapp por defecto */
+    z-index: 2000;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+  .wa-drag-hint.show { opacity: 1; }
+}
+
+/* -----------------------
+   FIN DEL ARCHIVO BASE (restaurado)
+   A continuación: ajustes nuevos muy puntuales SOLO para relámpagos en portrait.
+*/
 
 /* ---------- FIX: relámpagos en portrait (solo móvil vertical) ---------- */
 @media screen and (max-width:600px) and (orientation:portrait) {
-  .weather-overlay { z-index: 900; position: relative; }
+  /* Si tu overlay de clima usa .weather-overlay o .weather-lightning, estas reglas
+     mejoran nitidez/desenfoque y le dan z-index apropiado para que no quede "fantasma". */
+
+  .weather-overlay {
+    position: relative;
+    z-index: 950;
+    pointer-events: none;
+  }
+
   .weather-lightning {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    opacity: 1 !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-filter: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
+    z-index: 960;
+    /* Forzamos que no se aplique blur/filtro en portrait */
+    filter: none;
+    -webkit-filter: none;
+    backdrop-filter: none;
+    opacity: 1;
+    background: transparent;
     mix-blend-mode: screen;
     will-change: opacity, transform;
   }
+
+  /* Si tu relámpago se realiza con pseudo-elementos, asegurar su nitidez */
   .weather-lightning::before,
   .weather-lightning::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
-    background: transparent !important;
-    filter: none !important;
-    box-shadow: none !important;
-    opacity: 1 !important;
+    pointer-events: none;
+    background: transparent;
+    filter: none;
+    -webkit-filter: none;
+    opacity: 1;
     image-rendering: -webkit-optimize-contrast;
   }
 
+  /* Animación opcional (usarla desde JS agregando/removiendo la clase .portrait-flash) */
   @keyframes lightning-portrait-flash {
-    0% { opacity: 0; transform: scale(1); }
-    5% { opacity: 1; transform: scale(1.02); }
-    10% { opacity: 0.6; transform: scale(1); }
+    0%   { opacity: 0; transform: scale(1); }
+    5%   { opacity: 1; transform: scale(1.02); }
+    12%  { opacity: 0.6; transform: scale(1); }
     100% { opacity: 0; transform: scale(1); }
   }
 
   .weather-lightning.portrait-flash {
     animation: lightning-portrait-flash .9s ease-in-out both;
-    background: linear-gradient(0deg, rgba(255,255,255,0.9), rgba(255,255,255,0.0));
+    background: linear-gradient(0deg, rgba(255,255,255,0.92), rgba(255,255,255,0.0));
+    box-shadow: none;
   }
 }

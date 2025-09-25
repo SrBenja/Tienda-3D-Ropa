@@ -770,7 +770,7 @@
         // resetear visibilidad
         const existing = document.querySelector('.wa-drag-hint');
         existing.classList.add('show');
-        setTimeout(()=> existing.classList.remove('show'), 2000);
+        setTimeout(()=> existing.classList.remove('show'), 3000);
         return;
       }
 
@@ -783,7 +783,7 @@
       setTimeout(()=> {
         div.classList.remove('show');
         setTimeout(()=> { try{ div.remove(); }catch(e){} }, 200);
-      }, 2000);
+      }, 3000);
     } catch(e){}
   }
 
