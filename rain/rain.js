@@ -551,4 +551,11 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else setTimeout(init, 0);
 
+
+const lw = document.querySelector('.weather-lightning');
+lw && lw.classList.add('lightning-active');
+// quitar después si quieres que sea puntual:
+setTimeout(()=> lw && lw.classList.remove('lightning-active'), 900);
+
+
 })();
