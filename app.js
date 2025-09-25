@@ -503,12 +503,19 @@
   window.addEventListener('load', function(){ safeBlur(document.querySelector('#whatsapp a')); });
 
   /* ---------- Long-press + drag behavior (mobile only) - Mejorado ---------- */
+  // ---------- CONFIG / constantes ----------
   const WA_KEY = 'wa_pos_v3'; // sessionStorage key
-  const WA_MQ = '(max-width: 850px)'; // límite móvil
+  // detectar mejor dispositivos táctiles; mantenemos fallback si no soporta pointer media feature
+  const WA_MQ = '(pointer: coarse) and (max-width: 850px)'; // límite móvil táctil
   const LONG_PRESS_MS = 350; // mantener para activar el arrastre
   const MOVE_CANCEL_THRESHOLD = 10; // px de movimiento que cancela el long-press
   const wa = document.querySelector('#whatsapp');
   if (!wa) return;
+
+  // opciones (reutilizables) para add/removeEventListener — evita problemas de compatibilidad
+  const LISTEN_OPTIONS_MOVE = { passive: false }; // pointermove (necesitamos preventDefault cuando dragging)
+  const LISTEN_OPTIONS_UP   = { passive: true };  // pointerup/cancel (no prevent needed)
+  const LISTEN_OPTIONS_DOWN = false;               // pointerdown (capture? usamos false)
 
   let enabled = false;
   let longPressTimer = null;
@@ -573,6 +580,9 @@
 
       const w = wa.offsetWidth;
       const h = wa.offsetHeight;
+      // si el elemento está oculto o no tiene tamaño, no intentamos restaurar ahora
+      if (!w || !h) return false;
+
       const availW = Math.max(0, window.innerWidth - w);
       const availH = Math.max(0, window.innerHeight - h);
 
@@ -605,6 +615,9 @@
     wa.classList.add('dragging');
     // evitar gestos de scroll mientras arrastramos
     wa.style.touchAction = 'none';
+    // evitar selección accidental mientras arrastramos
+    wa.style.userSelect = 'none';
+    wa.style.webkitUserSelect = 'none';
     try {
       if (pointerId != null && wa.setPointerCapture) wa.setPointerCapture(pointerId);
     } catch(e){}
@@ -623,6 +636,9 @@
     dragging = false;
     wa.classList.remove('dragging');
     wa.style.touchAction = '';
+    // restaurar selección
+    wa.style.userSelect = '';
+    wa.style.webkitUserSelect = '';
     try {
       if (pointerId != null && wa.releasePointerCapture) wa.releasePointerCapture(pointerId);
     } catch(e){}
@@ -654,7 +670,12 @@
   // pointer handlers
   function onPointerDown(e) {
     // solo en mobile por matchMedia y evitar mouse en desktop
-    if (!window.matchMedia || !window.matchMedia(WA_MQ).matches) return;
+    try {
+      if (!window.matchMedia || !window.matchMedia(WA_MQ).matches) return;
+    } catch(err) {
+      // si matchMedia falla por sintaxis, fallback a ancho
+      if (window.innerWidth > 850) return;
+    }
     if (e.pointerType === 'mouse') return; // evitar activar con mouse (desktop)
     // solo iniciar si el pointer se originó sobre el whatsapp (o su hijo)
     if (!e.target || !wa.contains(e.target)) return;
@@ -758,10 +779,19 @@
     return true;
   }
 
-  // Mostrar hint (solo en móvil) — se muestra 2s a menos que se haya navegado a otra página
+  // Mostrar hint (solo en móvil) — se muestra 3s a menos que se haya navegado a otra página
   function showDragHintOnceIfNeeded() {
     try {
-      if (!window.matchMedia || !window.matchMedia(WA_MQ).matches) return;
+      // preferimos primero matchMedia, con fallback
+      if (window.matchMedia) {
+        try {
+          if (!window.matchMedia(WA_MQ).matches) return;
+        } catch(err) {
+          if (window.innerWidth > 850) return;
+        }
+      } else {
+        if (window.innerWidth > 850) return;
+      }
       // no mostrar si ya navegó a otra página
       if (sessionStorage.getItem('wa_navigated') === '1') return;
 
@@ -800,12 +830,11 @@
       }
     }
     // listeners
-    // pointerdown: importante no usar passive:true para poder controlar contextmenu si fuera necesario
-    wa.addEventListener('pointerdown', onPointerDown, false);
+    wa.addEventListener('pointerdown', onPointerDown, LISTEN_OPTIONS_DOWN);
     // pointermove no-passive para permitir e.preventDefault() cuando dragging
-    document.addEventListener('pointermove', onPointerMove, { passive: false });
-    document.addEventListener('pointerup', onPointerUp, { passive: true });
-    document.addEventListener('pointercancel', onPointerUp, { passive: true });
+    document.addEventListener('pointermove', onPointerMove, LISTEN_OPTIONS_MOVE);
+    document.addEventListener('pointerup', onPointerUp, LISTEN_OPTIONS_UP);
+    document.addEventListener('pointercancel', onPointerUp, LISTEN_OPTIONS_UP);
     // click suppression on the anchor inside wa
     const anchor = wa.querySelector('a');
     if (anchor) {
@@ -831,10 +860,10 @@
   function disableBehaviour() {
     if (!enabled) return;
     try {
-      wa.removeEventListener('pointerdown', onPointerDown, false);
-      document.removeEventListener('pointermove', onPointerMove, { passive: false });
-      document.removeEventListener('pointerup', onPointerUp, { passive: true });
-      document.removeEventListener('pointercancel', onPointerUp, { passive: true });
+      wa.removeEventListener('pointerdown', onPointerDown, LISTEN_OPTIONS_DOWN);
+      document.removeEventListener('pointermove', onPointerMove, LISTEN_OPTIONS_MOVE);
+      document.removeEventListener('pointerup', onPointerUp, LISTEN_OPTIONS_UP);
+      document.removeEventListener('pointercancel', onPointerUp, LISTEN_OPTIONS_UP);
       const anchor = wa.querySelector('a');
       if (anchor) anchor.removeEventListener('click', onClickAnchor, true);
     } catch(e){}
