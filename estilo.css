@@ -485,7 +485,7 @@ footer .footer2{
 
     /* en móvil no queremos que colapse: forzamos display:block para evitar alertas del linter */
     .carrito.carrito--hidden {
-      display: block;
+      display: none !important;
     }
 }
 
@@ -500,6 +500,7 @@ footer .footer2{
   z-index: 1000;
 }
 
+/* La burbuja: reglas por defecto */
 #whatsapp .whatsapp-bubble {
   opacity: 0;
   visibility: hidden;
@@ -513,6 +514,7 @@ footer .footer2{
   filter: drop-shadow(0 1px 4px rgba(0,0,0,.4));
   transform: translateY(6px);
   transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  box-sizing: border-box;
 }
 
 /* Selector principal: hover */
@@ -534,7 +536,7 @@ footer .footer2{
   }
 }
 
-
+/* Mejor: también mostrar cuando el enlace recibe foco visible (teclado) — usa :has() si está disponible */
 @supports(selector(:has(*))) {
   /* Si el navegador soporta :has(), mostramos la burbuja cuando el <a> interno tenga :focus-visible */
   #whatsapp:has(a:focus-visible) .whatsapp-bubble {
@@ -558,6 +560,7 @@ footer .footer2{
   width: 80px;
   height: 80px;
   pointer-events: auto;
+  display: block;
 }
 
 /* Evitar highlight táctil molesto en móviles */
@@ -670,8 +673,15 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
   /* Asegurar que el whatsapp no tape el menú cuando esté visible */
   #whatsapp { right: 12px; bottom: 12px; }
 }
+/* --------------------- FIN NUEVO BLOQUE portrait --------------------- */
+/* (el resto del archivo sigue igual, incluyendo bloques que ya existían)
+   — el siguiente bloque nuevo fuerza grid en portrait para colocar switch
+     debajo de Créditos sin hacer el logo mini. */
 
+ 
 /* BLOQUE ADICIONAL: switch debajo de Créditos en portrait */
+
+/* PORTRAIT: Forzar que el botón switch quede DEBAJO de 'Créditos' (alineado a la izquierda) */
 @media screen and (max-width:600px) and (orientation:portrait) {
   /* Usamos grid para controlar columnas/filas del menú */
   #menu ul {
@@ -809,66 +819,4 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
     transition: opacity .18s ease;
   }
   .wa-drag-hint.show { opacity: 1; }
-}
-
-/* -----------------------
-   FIN DEL ARCHIVO BASE (restaurado)
-   A continuación: ajustes nuevos muy puntuales SOLO para relámpagos en portrait.
-*/
-
-/* ---------- FIX: relámpagos en portrait (solo móvil vertical) ---------- */
-@media screen and (max-width:600px) and (orientation:portrait) {
-  /* Si tu overlay de clima usa .weather-overlay o .weather-lightning, estas reglas
-     mejoran nitidez/desenfoque y le dan z-index apropiado para que no quede "fantasma". */
-
-  .weather-overlay {
-    position: relative;
-    z-index: 950;
-    pointer-events: none;
-  }
-
-  .weather-lightning {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 960;
-    /* Forzamos que no se aplique blur/filtro en portrait */
-    filter: none;
-    -webkit-filter: none;
-    backdrop-filter: none;
-    opacity: 1;
-    background: transparent;
-    mix-blend-mode: screen;
-    will-change: opacity, transform;
-  }
-
-  /* Si tu relámpago se realiza con pseudo-elementos, asegurar su nitidez */
-  .weather-lightning::before,
-  .weather-lightning::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: transparent;
-    filter: none;
-    -webkit-filter: none;
-    opacity: 1;
-    image-rendering: -webkit-optimize-contrast;
-  }
-
-  /* Animación opcional (usarla desde JS agregando/removiendo la clase .portrait-flash) */
-  @keyframes lightning-portrait-flash {
-    0%   { opacity: 0; transform: scale(1); }
-    5%   { opacity: 1; transform: scale(1.02); }
-    12%  { opacity: 0.6; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1); }
-  }
-
-  .weather-lightning.portrait-flash {
-    animation: lightning-portrait-flash .9s ease-in-out both;
-    background: linear-gradient(0deg, rgba(255,255,255,0.92), rgba(255,255,255,0.0));
-    box-shadow: none;
-  }
 }

@@ -12,8 +12,6 @@
     <script src="app.js" defer></script>
     <script src="modonocturno.js" defer></script>
 
-    
-
     <title>Tienda de ropa 3D</title>
 </head>
 <body>
@@ -146,25 +144,28 @@
     
 
         <!-- Carrito de Compras -->
-        <div class="carrito" id="carrito">
+        <div class="carrito carrito--hidden" id="carrito">
             <div class="header-carrito">
                 <h2>Tu carrito</h2>
             </div>
 
             <div class="carrito-items">
                 <!-- 
+                Ejemplos comentados (solo referencia). NOTA: uso readonly (no disabled) para que JS pueda leer el valor.
+                -->
+                <!-- 
                 <div class="carrito-item">
                     <img src="img/boxengasse.png" width="80px" alt="">
                     <div class="carrito-item-detalles">
                         <span class="carrito-item-titulo">Box Engasse</span>
                         <div class="selector-cantidad">
-                            <i class="fa-solid fa-minus restar-cantidad"></i>
-                            <input type="text" value="1" class="carrito-item-cantidad" disabled>
-                            <i class="fa-solid fa-plus sumar-cantidad"></i>
+                            <i class="fa-solid fa-minus restar-cantidad" role="button" tabindex="0" aria-label="Disminuir cantidad"></i>
+                            <input type="text" value="1" class="carrito-item-cantidad" readonly>
+                            <i class="fa-solid fa-plus sumar-cantidad" role="button" tabindex="0" aria-label="Aumentar cantidad"></i>
                         </div>
                         <span class="carrito-item-precio">$15.000,00</span>
                     </div>
-                   <span class="btn-eliminar">
+                   <span class="btn-eliminar" role="button" tabindex="0" aria-label="Eliminar item">
                         <i class="fa-solid fa-trash"></i>
                    </span>
                 </div>
@@ -173,22 +174,22 @@
                     <div class="carrito-item-detalles">
                         <span class="carrito-item-titulo">Skin Glam</span>
                         <div class="selector-cantidad">
-                            <i class="fa-solid fa-minus restar-cantidad"></i>
-                            <input type="text" value="3" class="carrito-item-cantidad" disabled>
-                            <i class="fa-solid fa-plus sumar-cantidad"></i>
+                            <i class="fa-solid fa-minus restar-cantidad" role="button" tabindex="0" aria-label="Disminuir cantidad"></i>
+                            <input type="text" value="3" class="carrito-item-cantidad" readonly>
+                            <i class="fa-solid fa-plus sumar-cantidad" role="button" tabindex="0" aria-label="Aumentar cantidad"></i>
                         </div>
                         <span class="carrito-item-precio">$18.000,00</span>
                     </div>
-                   <button class="btn-eliminar">
+                   <span class="btn-eliminar" role="button" tabindex="0" aria-label="Eliminar item">
                         <i class="fa-solid fa-trash"></i>
-                   </button>
+                   </span>
                 </div>
                  -->
             </div>
             <div class="carrito-total">
                 <div class="fila">
                     <h2 class="colornegro"><strong>Tu total</strong></h2>
-                    <span class="carrito-precio-total" aria-live="polite">120 000 $</span>
+                    <span class="carrito-precio-total" aria-live="polite">0 $</span>
                 </div>
                 <a class="btn-pagar" href="compra/compra.html">Pagar <i class="fa-solid fa-bag-shopping"></i></a>
             </div>
