@@ -820,3 +820,64 @@ a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus
   }
   .wa-drag-hint.show { opacity: 1; }
 }
+
+
+/* -----------------------
+   FIX relámpagos: portrait-only (vertical)
+   - posiciona la capa, quita blur/filters y añade animación nítida de flashes
+   - no afecta PC / landscape
+   ----------------------- */
+@media screen and (max-width: 600px) and (orientation: portrait) {
+  /* asegurar overlay completo y por encima del banner/elementos */
+  .weather-overlay {
+    position: relative; /* ya podrías tenerlo, esto lo asegura */
+    z-index: 1000;
+  }
+
+  /* la capa de lluvia por debajo del lightning */
+  .weather-rain {
+    position: relative;
+    z-index: 1001;
+  }
+
+  /* LAYER: relámpago (nítido en portrait) */
+  .weather-lightning {
+    position: absolute !important;
+    inset: 0 !important;               /* top:0; right:0; bottom:0; left:0 */
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none !important;
+    z-index: 1002 !important;
+    background: transparent !important;
+    mix-blend-mode: screen !important; /* hace que los destellos se vean más brillantes */
+    opacity: 0 !important;
+    filter: none !important;           /* eliminar blur/efectos que provoquen 'luz difusa' */
+    transition: opacity .08s linear !important;
+    will-change: opacity, transform;
+  }
+
+  /* keyframes para un relámpago nítido y "cinemático" */
+  @keyframes lightning-flash-portrait {
+    0%   { opacity: 0; transform: scale(1); }
+    2%   { opacity: 1; transform: scale(1.02); }
+    6%   { opacity: 0; transform: scale(1); }
+    20%  { opacity: 0; }
+    22%  { opacity: 0.9; transform: scale(1.03); }
+    26%  { opacity: 0; transform: scale(1); }
+    100% { opacity: 0; }
+  }
+
+  /* Recomendado: activar esta animación solo cuando JS (rain.js u otro) añada la clase .lightning-active
+     o cuando se ponga el atributo data-force-flash="1". Así evitamos usar CPU innecesariamente. */
+  .weather-lightning.lightning-active,
+  .weather-lightning[data-force-flash="1"] {
+    animation: lightning-flash-portrait 2.2s linear infinite !important;
+    background-image: radial-gradient(circle at 50% 20%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.6) 6%, rgba(255,255,255,0) 20%), linear-gradient(transparent, rgba(255,255,255,0.02));
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: 60% 60%;
+  }
+
+  /* si quieres un flash puntual (no infinito), usa JS para añadir la clase y quitarla tras la animación */
+  /* ejemplo visual: .weather-lightning.flash-once { animation: lightning-flash-portrait 0.4s linear 1; } */
+}
