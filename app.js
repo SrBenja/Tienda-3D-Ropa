@@ -482,7 +482,7 @@
 })();
 
 
-// ==== WhatsApp: improved long-press draggable + hint + fixes ====
+// ==== WhatsApp: safeBlur global + long-press draggable SOLO en móvil (mejorado) ====
 (function(){
   'use strict';
 
@@ -503,7 +503,7 @@
   window.addEventListener('load', function(){ safeBlur(document.querySelector('#whatsapp a')); });
 
   /* ---------- Long-press + drag behavior (mobile only) - Mejorado ---------- */
-  const WA_KEY = 'wa_pos_v3'; // sessionStorage key
+  const WA_KEY = 'wa_pos_v2'; // sessionStorage key for position (v2: includes percents)
   const WA_MQ = '(max-width: 850px)'; // límite móvil
   const LONG_PRESS_MS = 350; // mantener para activar el arrastre
   const MOVE_CANCEL_THRESHOLD = 10; // px de movimiento que cancela el long-press
@@ -518,8 +518,6 @@
   let dragging = false;
   let suppressClick = false;
   let contextMenuHandler = null;
-  let dragstartHandler = null;
-  let savedBubbleWidthDuringDrag = null;
 
   // clamp a la ventana para que no desaparezca
   function clampPosition(left, top) {
@@ -541,7 +539,7 @@
     wa.style.bottom = 'auto';
   }
 
-  // guardar en sessionStorage (persistencia por sesión)
+  // guardar en sessionStorage (persistencia por sesión) — guardamos píxeles y porcentajes
   function savePosition(left, top) {
     try {
       const w = wa.offsetWidth;
@@ -608,14 +606,6 @@
     try {
       if (pointerId != null && wa.setPointerCapture) wa.setPointerCapture(pointerId);
     } catch(e){}
-
-    // fijar ancho de la burbuja para que no cambie mientras movemos
-    const bubble = wa.querySelector('.whatsapp-bubble');
-    if (bubble) {
-      savedBubbleWidthDuringDrag = bubble.offsetWidth;
-      bubble.style.width = savedBubbleWidthDuringDrag + 'px';
-      bubble.style.boxSizing = 'border-box';
-    }
   }
 
   function endDrag() {
@@ -635,17 +625,6 @@
     if (contextMenuHandler) {
       wa.removeEventListener('contextmenu', contextMenuHandler, true);
       contextMenuHandler = null;
-    }
-    // quitar dragstart preventer
-    if (dragstartHandler) {
-      const anchor = wa.querySelector('a');
-      anchor && anchor.removeEventListener('dragstart', dragstartHandler, true);
-      dragstartHandler = null;
-    }
-    // restaurar estilo burbuja
-    const bubble = wa.querySelector('.whatsapp-bubble');
-    if (bubble) {
-      bubble.style.width = '';
     }
     // evitar que el click inmediato que sigue (por pointerup) abra el enlace
     setTimeout(()=>{ suppressClick = false; }, 350);
@@ -669,21 +648,12 @@
 
     // agregar handler contextmenu para bloquear el menú nativo (se quita en pointerup/endDrag)
     contextMenuHandler = function(ev) {
+      // si estamos en fase de long-press o arrastre, evitar menú contextual
       ev.preventDefault();
       ev.stopPropagation && ev.stopPropagation();
       return false;
     };
     wa.addEventListener('contextmenu', contextMenuHandler, true);
-
-    // prevenir dragstart nativo sobre el anchor/svg (esto soluciona "arrastrar enlace")
-    dragstartHandler = function(ev) {
-      ev.preventDefault();
-      return false;
-    };
-    const anchor = wa.querySelector('a');
-    anchor && anchor.addEventListener('dragstart', dragstartHandler, true);
-    // además forzamos draggable=false
-    if (anchor) anchor.setAttribute('draggable', 'false');
 
     // preparar long-press
     if (longPressTimer) {
@@ -695,6 +665,8 @@
       // iniciar arrastre
       startDrag();
     }, LONG_PRESS_MS);
+
+    // Nota: NO prevenimos el default del pointerdown aquí (dejamos taps normales funcionar).
   }
 
   function onPointerMove(e) {
@@ -710,14 +682,13 @@
 
     // dragging: update position
     if (dragging && e.pointerId === pointerId) {
-      // evitar comportamiento por defecto (texto/imagen arrastrada)
-      try { e.preventDefault(); } catch(err){}
       const dx = e.clientX - startClientX;
       const dy = e.clientY - startClientY;
       const newLeft = elemStartLeft + dx;
       const newTop = elemStartTop + dy;
       const clamped = clampPosition(newLeft, newTop);
       applyPosition(clamped.left, clamped.top);
+      // no guardarse continuamente, se guardará en endDrag
     }
   }
 
@@ -737,11 +708,6 @@
         wa.removeEventListener('contextmenu', contextMenuHandler, true);
         contextMenuHandler = null;
       }
-      if (dragstartHandler) {
-        const anchor = wa.querySelector('a');
-        anchor && anchor.removeEventListener('dragstart', dragstartHandler, true);
-        dragstartHandler = null;
-      }
     }
 
     pointerId = null;
@@ -756,35 +722,6 @@
       return false;
     }
     return true;
-  }
-
-  // Mostrar hint (solo en móvil) — se muestra 2s a menos que se haya navegado a otra página
-  function showDragHintOnceIfNeeded() {
-    try {
-      if (!window.matchMedia || !window.matchMedia(WA_MQ).matches) return;
-      // no mostrar si ya navegó a otra página
-      if (sessionStorage.getItem('wa_navigated') === '1') return;
-
-      // crear hint si no existe
-      if (document.querySelector('.wa-drag-hint')) {
-        // resetear visibilidad
-        const existing = document.querySelector('.wa-drag-hint');
-        existing.classList.add('show');
-        setTimeout(()=> existing.classList.remove('show'), 2000);
-        return;
-      }
-
-      const div = document.createElement('div');
-      div.className = 'wa-drag-hint';
-      div.textContent = 'Mantenga presionado el icono de WhatsApp para moverlo';
-      document.body.appendChild(div);
-      // show
-      requestAnimationFrame(()=> div.classList.add('show'));
-      setTimeout(()=> {
-        div.classList.remove('show');
-        setTimeout(()=> { try{ div.remove(); }catch(e){} }, 200);
-      }, 2000);
-    } catch(e){}
   }
 
   // activar/desactivar según matchMedia
@@ -802,29 +739,12 @@
     // listeners
     // pointerdown: importante no usar passive:true para poder controlar contextmenu si fuera necesario
     wa.addEventListener('pointerdown', onPointerDown, false);
-    // pointermove no-passive para permitir e.preventDefault() cuando dragging
-    document.addEventListener('pointermove', onPointerMove, { passive: false });
+    document.addEventListener('pointermove', onPointerMove, { passive: true });
     document.addEventListener('pointerup', onPointerUp, { passive: true });
     document.addEventListener('pointercancel', onPointerUp, { passive: true });
     // click suppression on the anchor inside wa
     const anchor = wa.querySelector('a');
-    if (anchor) {
-      anchor.addEventListener('click', onClickAnchor, true);
-      // asegurar no draggable
-      anchor.setAttribute('draggable', 'false');
-      // prevenir dragstart globalmente (redundante pero útil)
-      anchor.addEventListener('dragstart', function(ev){ ev.preventDefault(); }, true);
-    }
-    // also prevent dragstart on images inside
-    const imgs = wa.querySelectorAll('img, svg');
-    imgs.forEach(i => {
-      try { i.addEventListener('dragstart', function(ev){ ev.preventDefault(); }, true); } catch(e){}
-      try { i.setAttribute && i.setAttribute('draggable', 'false'); } catch(e){}
-    });
-
-    // show hint
-    setTimeout(showDragHintOnceIfNeeded, 300); // un poco después del load
-
+    if (anchor) anchor.addEventListener('click', onClickAnchor, true);
     enabled = true;
   }
 
@@ -832,13 +752,13 @@
     if (!enabled) return;
     try {
       wa.removeEventListener('pointerdown', onPointerDown, false);
-      document.removeEventListener('pointermove', onPointerMove, { passive: false });
+      document.removeEventListener('pointermove', onPointerMove, { passive: true });
       document.removeEventListener('pointerup', onPointerUp, { passive: true });
       document.removeEventListener('pointercancel', onPointerUp, { passive: true });
       const anchor = wa.querySelector('a');
       if (anchor) anchor.removeEventListener('click', onClickAnchor, true);
     } catch(e){}
-    // restore to default corner unless a saved pos exists
+    // restore to default corner unless a saved pos exists (we keep saved pos but reset css)
     const raw = sessionStorage.getItem(WA_KEY);
     if (!raw) {
       resetToCorner();
@@ -880,10 +800,12 @@
 
   // Asegurar que al cambiar tamaño/orientación la posición se re-clamp y no desaparezca
   window.addEventListener('orientationchange', function(){
+    // si hay posición guardada, reaplicar y clamp
     restorePositionIfAny();
   });
 
   window.addEventListener('resize', function(){
+    // si tenemos pos guardada, re-clamp
     restorePositionIfAny();
   });
 
