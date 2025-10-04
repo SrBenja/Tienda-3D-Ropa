@@ -1,0 +1,139 @@
+/* contacto.css — actualizado con honeypot y SVG lock visible */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap');
+
+* { box-sizing: border-box; }
+body{
+  min-height: 100vh;
+  font-family: 'Noto Sans', sans-serif;
+  background-color: #0C0C87;
+  margin: 0;
+  color: #0e0e0e;
+}
+
+/* nav */
+nav{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  background-color: #0f0f18;
+  padding: 0 16px;
+}
+nav .logo img{ height: 44px; }
+nav ul{ display: flex; align-items: center; list-style: none; margin: 0; padding: 0; }
+nav li a{ color: white; text-decoration: none; font-size: 1.1rem; padding: 10px 14px; display: inline-block; }
+nav li a:hover { background-color: #fff; color: #000; border-radius:6px; }
+
+/* formulario contenedor */
+.contact_form{
+  max-width: 720px;
+  width: 92%;
+  margin: 48px auto;
+  border-radius: 10px;
+  background-color: #fbfbfb;
+  padding: 28px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.formulario h1{ font-size: 32px; margin: 0 0 8px; color: #0C0C87; text-align: left; }
+.formulario h3{ font-size: 16px; margin: 0 0 20px; color: #0e0e0e; }
+
+.contact_form p{ margin: 12px 0; }
+
+/* honeypot: visually hidden but present for bots */
+.honeypot{ position: absolute !important; left: -9999px !important; top: auto !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+
+/* inputs and textarea */
+input[type="text"], input[type="email"], textarea{
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #0C0C87;
+  background-color: #fbfbfb;
+  font-size: 15px;
+  color: #111;
+  resize: vertical;
+}
+textarea{ min-height: 140px; padding-top: 12px; }
+
+::placeholder { color: #a8a8a8; opacity: 1; }
+label{ display:block; margin-bottom:6px; font-weight:500; color:#0C0C87; }
+
+.aviso{ font-size: 13px; color: #0e0e0e; margin-top: 14px; }
+.obligatorio{ color: #0C0C87; margin-left: 6px; }
+
+/* button base */
+.btn-contact{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 48px;
+  border-radius: 10px;
+  background-color: #0C0C87;
+  color: white;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: transform .06s, opacity .12s;
+}
+
+/* lock icon (SVG) hidden by default but shown in locked state */
+.btn-lock{ display: none; width: 18px; height: 18px; }
+
+/* locked state: red + lock visible */
+.btn-contact.btn-locked{
+  background: #c92b2b;
+  color: #fff;
+}
+.btn-contact.btn-locked .btn-lock{ display: inline-block; }
+
+/* Focus visible */
+input:focus, textarea:focus, button:focus {
+  outline: 3px solid rgba(151,216,72,0.18);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* error */
+.field-error{ display:block; margin-top:6px; color:#b81a1a; font-size:0.95rem; }
+.field-error[hidden]{ display:none; }
+.input-error { border-color: #e06a6a !important; background: #fff6f6; }
+
+/* popup */
+.popup{
+  position: fixed;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%) scale(0.9);
+  width: 360px;
+  max-width: 92%;
+  background:#fff;
+  border-radius:8px;
+  padding:18px;
+  text-align:center;
+  box-shadow:0 12px 30px rgba(0,0,0,0.25);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .25s, visibility .25s, transform .25s;
+  z-index: 9999;
+}
+.popup img{ width:80px; height:80px; border-radius:50%; margin-top:-50px; box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
+.popup h2{ margin-top:8px; font-size:1.4rem; }
+.popup p{ margin:10px 0 18px; color:#444; }
+.popup-actions{ margin-top:10px; display:flex; gap:8px; justify-content:center; }
+.popup button{ padding:10px 18px; border-radius:6px; border:0; background:#00b36b; color:#fff; cursor:pointer; }
+.popup.open{ visibility: visible; opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+/* screen-reader only */
+.sr-only{ position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* responsive */
+@media (max-width: 520px){
+  .contact_form{ padding: 18px; margin: 24px 10px; }
+  .formulario h1{ font-size: 26px; }
+  .btn-contact{ font-size: 0.98rem; height: 46px; }
+}

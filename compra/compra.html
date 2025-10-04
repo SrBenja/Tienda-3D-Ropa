@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+  <link rel="stylesheet" href="compra.css">
+  <title>Completar el pago</title>
+</head>
+<body>
+
+  <main id="main" class="main-wrap">
+    <form id="paymentForm" novalidate>
+      <section id="divDatos" class="card" aria-labelledby="datosTitulo">
+        <h1 id="datosTitulo" class="page-title">Completar el pago</h1>
+        <h2 class="card-subtitle">Datos personales</h2>
+
+        <div class="grid-2">
+          <div>
+            <label for="nombre">Nombre completo:</label>
+            <input type="text" id="nombre" name="nombre" autocomplete="name" required />
+
+            <label for="apellido">Apellido completo:</label>
+            <input type="text" id="apellido" name="apellido" autocomplete="family-name" />
+
+            <label for="dni">DNI / Documento:</label>
+            <input type="text" id="dni" name="dni" autocomplete="off" maxlength="12" inputmode="numeric" pattern="\d{7,12}" />
+
+            <label for="viaNombre">Calle / Avenida:</label>
+            <input type="text" id="viaNombre" name="viaNombre" autocomplete="street-address" />
+
+            <label for="viaNumero">N.° de puerta / Piso / Depto:</label>
+            <input type="text" id="viaNumero" name="viaNumero" autocomplete="address-line2" />
+          </div>
+
+          <div>
+            <label for="movil">Teléfono móvil:</label>
+            <input type="text" id="movil" name="movil" autocomplete="tel" placeholder="Ej. 1155556666" inputmode="tel" maxlength="15" />
+
+            <label for="email1">E-mail:</label>
+            <input id="email1" name="email1" type="email" autocomplete="email" placeholder="micorreo@gmail.com" />
+
+            <label for="email2">Repetir e-mail:</label>
+            <input id="email2" name="email2" type="email" autocomplete="email" placeholder="micorreo@gmail.com" />
+
+            <label>Fecha de nacimiento:</label>
+            <div class="inline-selects" role="group" aria-label="Fecha de nacimiento">
+              <select id="fechaNacimientoDia" name="fechaNacimientoDia" aria-label="Día" autocomplete="bday-day">
+                <option value="">Día</option>
+                <script>for(let i=1;i<=31;i++){document.write(`<option value="${i}">${i}</option>`);} </script>
+              </select>
+
+              <select id="fechaNacimientoMes" name="fechaNacimientoMes" aria-label="Mes" autocomplete="bday-month">
+                <option value="">Mes</option>
+                <script>
+                  const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+                  for(let i=0;i<12;i++){document.write(`<option value="${i+1}">${meses[i]}</option>`);}
+                </script>
+              </select>
+
+              <select id="fechaNacimientoAnio" name="fechaNacimientoAnio" aria-label="Año" autocomplete="bday-year">
+                <option value="">Año</option>
+                <script>
+                  const yearNow = new Date().getFullYear();
+                  for(let y=yearNow; y>=1900; y--){ document.write(`<option value="${y}">${y}</option>`); }
+                </script>
+              </select>
+            </div>
+
+            <label for="localidad">Localidad:</label>
+            <input type="text" id="localidad" name="localidad" autocomplete="address-level2" />
+
+            <label for="codigoPostal">Código postal:</label>
+            <input type="text" id="codigoPostal" name="codigoPostal" autocomplete="postal-code" maxlength="10" pattern="\d{4,10}" />
+
+            <label for="provincia">Provincia:</label>
+            <select id="provincia" name="provincia" autocomplete="address-level1">
+              <option value="">Seleccione...</option>
+              <option>Buenos Aires</option>
+              <option>Córdoba</option>
+              <option>Santa Fe</option>
+              <option>Mendoza</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Botón toggle del resumen (visible en móvil) -->
+      <div class="summary-toggle-wrap">
+        <button type="button" id="toggleSummary" class="summary-toggle" aria-controls="orderSummary" aria-expanded="true">Ocultar resumen</button>
+      </div>
+
+      <!-- RESUMEN DEL PEDIDO (RESUMEN DEL PEDIDO) -->
+      <aside id="orderSummary" class="card order-summary" aria-live="polite" role="region" aria-labelledby="resumenTitulo">
+        <h2 id="resumenTitulo">Resumen del pedido</h2>
+        <div id="orderItems">
+          <p class="muted">Cargando resumen...</p>
+        </div>
+        <div class="order-total" aria-hidden="false">
+          <strong id="orderTotal" aria-live="polite">$0</strong>
+        </div>
+        <small class="muted">Los precios son en ARS. Si vienes desde el carrito, el resumen se carga automáticamente.</small>
+      </aside>
+
+      <!-- Datos de pago -->
+      <section id="divPago" class="card" aria-labelledby="pagoTitulo">
+        <h2 id="pagoTitulo">Datos de pago</h2>
+
+        <label for="titular">Titular de la tarjeta:</label>
+        <input type="text" id="titular" name="titular" autocomplete="cc-name" />
+
+        <fieldset class="pay-methods" aria-label="Tipo de tarjeta">
+          <legend class="sr-only">Tipo de tarjeta</legend>
+          <span id="alertTipoDeTarjeta" class="alert" aria-live="polite"></span>
+
+          <label>
+            <input type="radio" id="visa" name="tarjetas" class="logoTarjetas" value="Visa" />
+            <img src="../img/visa.png" title="Visa" alt="Visa" />
+          </label>
+
+          <label>
+            <input type="radio" id="masterCard" name="tarjetas" class="logoTarjetas" value="MasterCard" />
+            <img src="../img/mastercard.png" title="Mastercard" alt="Mastercard" />
+          </label>
+
+          <label>
+            <input type="radio" id="amex" name="tarjetas" class="logoTarjetas" value="American Express" />
+            <img src="../img/amex.png" title="Amex" alt="American Express" />
+          </label>
+
+          <label>
+            <input type="radio" id="discover" name="tarjetas" class="logoTarjetas" value="Discover" />
+            <img src="../img/discover.png" title="Discover" alt="Discover" />
+          </label>
+        </fieldset>
+
+        <div id="divNumeroTarjeta" class="grid-card">
+          <div>
+            <label for="numeroTarjeta">Número de tarjeta:</label>
+            <input type="text"
+                   id="numeroTarjeta"
+                   name="numeroTarjeta"
+                   autocomplete="cc-number"
+                   inputmode="numeric"
+                   pattern="[0-9\s]{13,19}"
+                   maxlength="19"
+                   placeholder="XXXX XXXX XXXX XXXX"
+                   aria-describedby="cardBrand" />
+            <small id="cardBrand" class="muted card-brand-inline" aria-live="polite">Marca: —</small>
+          </div>
+
+          <div>
+            <label for="cvcTarjeta">CVC:</label>
+            <input type="text" id="cvcTarjeta" name="cvcTarjeta" autocomplete="cc-csc" inputmode="numeric" pattern="\d{3,4}" maxlength="4" />
+          </div>
+
+          <div>
+            <label for="mesTarjeta">Mes vencimiento:</label>
+            <select id="mesTarjeta" name="mesTarjeta" autocomplete="cc-exp-month">
+              <option value="">Mes</option>
+              <script>for(let m=1;m<=12;m++){document.write(`<option value="${m}">${String(m).padStart(2,'0')}</option>`);}</script>
+            </select>
+          </div>
+
+          <div>
+            <label for="anioTarjeta">Año vencimiento:</label>
+            <select id="anioTarjeta" name="anioTarjeta" autocomplete="cc-exp-year">
+              <option value="">Año</option>
+              <script>
+                const yNow = new Date().getFullYear();
+                for(let y=yNow; y<=yNow+12; y++){ document.write(`<option value="${y}">${y}</option>`); }
+              </script>
+            </select>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ****************** ACCIONES (FUERA de la tarjeta) ****************** -->
+      <div class="actions" role="group" aria-label="Acciones de pago">
+        <div class="left-actions">
+          <button type="button" class="btn btn-cancelarpago btn-cancelarpago--danger" data-variant="ghost" aria-label="Cancelar pago">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7A1 1 0 0 0 5.7 7.11L10.59 12l-4.9 4.89a1 1 0 1 0 1.41 1.41L12 13.41l4.89 4.9a1 1 0 0 0 1.41-1.41L13.41 12l4.9-4.89a1 1 0 0 0 0-1.4z"/>
+            </svg>
+            <span class="btn-text">Cancelar pago</span>
+          </button>
+        </div>
+
+        <div class="right-actions">
+          <button type="button" class="btn btn-confirmarpago" data-variant="primary" aria-label="Confirmar pago">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/>
+            </svg>
+            <span class="btn-text">Confirmar pago</span>
+          </button>
+        </div>
+      </div>
+      <!-- ****************** fin acciones ****************** -->
+
+    </form>
+  </main>
+
+  <!-- POPUPS -->
+  <div class="popup" id="popup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+    <img src="../img/tick.png" alt="Pago confirmado" />
+    <h2 id="popupTitle">¡Pago confirmado!</h2>
+    <p>Será redirigido/a al inicio.<br>¡Muchas gracias!</p>
+    <div class="popup-actions">
+      <button id="popupAccept">Aceptar</button>
+    </div>
+  </div>
+
+  <div class="popup popup-cancel" id="popup2" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="popupCancelTitle">
+    <img src="../img/cancel.png" alt="Pago cancelado" />
+    <h2 id="popupCancelTitle">¡Pago cancelado!</h2>
+    <p>Será redirigido/a al inicio.</p>
+    <div class="popup-actions">
+      <button id="popupCancelAccept">Aceptar</button>
+    </div>
+  </div>
+
+  <script src="compra.js"></script>
+</body>
+</html>

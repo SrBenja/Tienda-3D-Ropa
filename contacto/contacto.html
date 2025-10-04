@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="../img/logo.png" />
+  <link rel="stylesheet" type="text/css" href="contacto.css" />
+  <script src="contacto.js" defer></script>
+  <title>Contacto</title>
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="logo">
+        <a href="../index.html" aria-label="Ir al inicio"><img src="../img/logo.png" alt="Logo"></a>
+      </div>
+      <ul>
+        <li><a href="../index.html">Inicio</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main role="main">
+    <section class="contact_form" aria-labelledby="contactTitle">
+      <div class="formulario">
+        <h1 id="contactTitle">Contacto</h1>
+        <h3>Escríbanos y le contestaremos a la brevedad posible</h3>
+
+        <form id="contactForm" action="#" method="post" novalidate>
+          <!-- Honeypot anti-spam (oculto) -->
+          <div class="honeypot" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" autocomplete="off" tabindex="-1" />
+          </div>
+
+          <p>
+            <label for="nombre" class="colocar_nombre">Nombre <span class="obligatorio" aria-hidden="true">*</span></label>
+            <input type="text" id="nombre" name="nombre" autocomplete="name" aria-describedby="error-nombre" />
+            <span id="error-nombre" class="field-error" aria-live="polite" hidden>El nombre es obligatorio.</span>
+          </p>
+
+          <p>
+            <label for="apellido" class="colocar_apellido">Apellido <span class="obligatorio" aria-hidden="true">*</span></label>
+            <input type="text" id="apellido" name="apellido" autocomplete="family-name" aria-describedby="error-apellido" />
+            <span id="error-apellido" class="field-error" aria-live="polite" hidden>El apellido es obligatorio.</span>
+          </p>
+
+          <p>
+            <label for="email" class="colocar_email">E-mail <span class="obligatorio" aria-hidden="true">*</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" aria-describedby="error-email" />
+            <span id="error-email" class="field-error" aria-live="polite" hidden>Introduce un e-mail válido.</span>
+          </p>
+
+          <p>
+            <label for="mensaje" class="colocar_mensaje">Mensaje <span class="obligatorio" aria-hidden="true">*</span></label>
+            <textarea id="mensaje" name="mensaje" class="texto_mensaje" autocomplete="off" aria-describedby="error-mensaje"></textarea>
+            <span id="error-mensaje" class="field-error" aria-live="polite" hidden>El mensaje no puede estar vacío.</span>
+          </p>
+
+          <!-- estado global (para lectores de pantalla) -->
+          <div id="contactStatus" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+          <!-- botón: SVG inline para candado (garantiza visibilidad) -->
+          <button type="button" id="enviar" class="btn-contact btn-locked" aria-disabled="true" aria-describedby="contactStatus">
+            <!-- SVG lock -->
+            <svg class="btn-lock" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+              <path fill="currentColor" d="M12 17a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm6-6h-1V9a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zm-8-2a3 3 0 0 1 6 0v2H10V9z"/>
+            </svg>
+            <span class="btn-text">Enviar</span>
+          </button>
+
+          <p class="aviso"><span class="obligatorio"> * </span>¡Los campos son obligatorios!</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- POPUP de confirmación (no redirige; cierra al Aceptar) -->
+  <div class="popup" id="contactPopup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="contactPopupTitle">
+    <img src="../img/tick.png" alt="" />
+    <h2 id="contactPopupTitle">Mensaje enviado</h2>
+    <p>Su mensaje fue enviado correctamente. Gracias por contactarnos.</p>
+    <div class="popup-actions">
+      <button id="contactPopupAccept">Aceptar</button>
+    </div>
+  </div>
+
+</body>
+</html>

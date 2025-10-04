@@ -1,0 +1,809 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600&family=Titillium+Web:wght@200;300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+/* --- BOX-SIZING global (seguro, evita sorpresas con padding/widths) --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+*{
+    margin: 0;
+    padding:0;
+    font-family: 'Open Sans';
+}
+
+/* Animación logo: unificada duración y respetar prefers-reduced-motion */
+/* -> Elegí 3.5 segundos para que coincida y la animación siga funcionando */
+@-webkit-keyframes rotate { from { -webkit-transform: rotate(0deg); } to { -webkit-transform: rotate(360deg); } }
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.logo {
+    -webkit-animation: 3.5s rotate ease-in infinite;
+    animation: 3.5s rotate ease-in infinite;
+    -webkit-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+    padding: 30px;
+}
+
+/* Si el usuario pide reducir la animación, apagarla */
+@media (prefers-reduced-motion: reduce) {
+  .logo {
+    -webkit-animation: none !important;
+    animation: none !important;
+  }
+}
+
+.titulo-item{
+    color: black;
+}
+
+/* Botones principales */
+.mi-boton,
+.mi-boton2 {
+    margin-top: 100px;
+    background-color: rgb(212, 16, 16);
+    font-size: 16px;
+    padding: 10px 20px;
+    border: 2px solid #318aac;
+    position: relative;
+    width: 100%;
+    max-width: 300px;
+    cursor: pointer;
+    border-radius: 80px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+}
+
+/* propiedad específica en mi-boton2 */
+.mi-boton2 { max-height: 50px; }
+
+.mi-boton:hover,
+.mi-boton2:hover {
+    color: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 16px rgba(49, 138, 172, 1);
+    transition: all 0.2s ease;
+}
+
+/* --- media query móvil unificado --- */
+@media screen and (max-width: 600px) {
+    .mi-boton, .mi-boton2 { font-size: 14px; padding: 8px 16px; }
+}
+
+/* Banner */
+.banner{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background: url(img/templar.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position:center;
+    height: 450px;
+}
+.banner h1{
+    text-align: center;
+    font-size: 68px;
+    color: white;
+    -webkit-text-stroke: 3.5px black;
+}
+
+/* Menu */
+#menu{
+    display: flex;
+    height: 100px;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    background-color: #000;
+    overflow: hidden;
+}
+#menu ul{ list-style: none; margin: 0; padding: 0; }
+#menu ul li{ display: inline-block; }
+#menu ul li a{
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    padding: 0 12px;
+    text-decoration: none;
+}
+#menu ul li a:hover{ background-color: red; }
+
+.item-r{ float: right; }
+
+/* Footer */
+footer{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+    height: 200px;
+    background-color: black;
+    width: 100%;
+}
+footer .Derechos{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    color: white;
+    height: 30px;
+    background-color: #181210;
+    align-self: baseline;
+}
+footer .footer2{
+    margin-top: -100px;
+    position: absolute;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    color: white;
+    height: 30px;
+}
+.Derechos p{
+    font-family: 'MedievalSharp';
+    color: white;
+}
+
+/* logo hover */
+.logo:hover{
+    border-radius: 50%;
+    box-shadow: 0px 0px 15px 15px #db0cae;
+}
+
+/* Contenedor items */
+.contenedor{
+    max-width: 1200px;
+    padding: 10px;
+    margin: auto;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+/* Zona de productos: grid flexible que puede encogerse para evitar overflow */
+.contenedor .contenedor-items{
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    transition: .3s;
+}
+.contenedor .contenedor-items .item{
+    max-width: 200px;
+    margin: auto;
+    border: 1px solid #666;
+    border-radius: 10px;
+    padding: 20px;
+    transition: .3s;
+}
+.contenedor .contenedor-items .item .img-item{ width: 100%; }
+
+.contenedor .contenedor-items .item:hover{
+    transform: scale(1.05);
+}
+
+/* Titulos y precio del item */
+.contenedor .contenedor-items .item .titulo-item{
+    display: block;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+}
+.contenedor .contenedor-items .item .precio-item{
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    font-size: 22px;
+}
+.contenedor .contenedor-items .item .boton-item{
+    display: block;
+    margin: 10px auto;
+    border: none;
+    background-color: black;
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* seccion carrito (mejorada y colapsable; no ocupa espacio cuando está hidden) */
+.carrito{
+    border: 1px solid #666;
+    flex: 0 0 0;
+    width: auto;
+    max-width: 420px;
+    margin-top: 30px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: auto;
+    position: sticky;
+    top: 0;
+    transition: flex-basis .28s ease, opacity .28s ease, padding .28s ease;
+    box-sizing: border-box;
+    padding: 0;
+}
+
+/* Cuando el carrito esté visible: ocupa su ancho fijo */
+.carrito.carrito--visible {
+    flex: 0 0 420px;
+    width: 420px;
+    max-width: 420px;
+    opacity: 1;
+    pointer-events: auto;
+    padding: 12px 0 0 0;
+}
+
+/* Cuando el carrito está oculto: colapsado a 0 (no ocupa ancho) */
+.carrito.carrito--hidden {
+    flex: 0 0 0;
+    width: 0;
+    max-width: 0;
+    opacity: 0;
+    pointer-events: none;
+    padding: 0;
+}
+
+/* cabecera carrito */
+.carrito .header-carrito{
+    background-color: #000;
+    color: #fff;
+    text-align: center;
+    padding: 30px 0;
+}
+
+/* item del carrito: layout en flex y soporte para títulos multilínea */
+.carrito .carrito-item{
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    border-bottom: 1px solid #666;
+    padding: 20px;
+}
+
+/* imagen: mantener margen a la derecha */
+.carrito .carrito-item img{
+    margin-right: 20px;
+}
+
+/* detalles (título, selector, precio) — dejar espacio para la papelera */
+.carrito .carrito-item .carrito-item-detalles{
+    padding-right: 60px;
+    min-width: 0;
+}
+
+/* título: permitir wrapping/ruptura de palabras */
+.carrito .carrito-item .carrito-item-titulo{
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: inherit;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.1;
+}
+
+/* selector de cantidad */
+.carrito .carrito-item .selector-cantidad{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 25px;
+}
+
+/* input cantidad */
+.carrito .carrito-item .carrito-item-cantidad{
+    border: none;
+    font-size: 18px;
+    background-color: transparent;
+    display: inline-block;
+    width:30px;
+    padding: 5px;
+    text-align: center;
+}
+
+/* iconos + / - */
+.carrito .carrito-item .selector-cantidad i{
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    border-radius: 50%;
+    border: 1px solid #000;
+    cursor: pointer;
+}
+
+/* precio del item */
+.carrito .carrito-item .carrito-item-precio{
+    font-weight: bold;
+    display: inline-block;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+/* botón eliminar (posición absoluta a la derecha) */
+.carrito .carrito-item .btn-eliminar{
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    color: #000;
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+    border: 1px solid #000;
+    cursor: pointer;
+    display: block;
+    background: transparent;
+    z-index: 20;
+}
+.carrito .carrito-item .btn-eliminar i{
+    pointer-events: none;
+}
+
+/* total y boton pagar (compatibilidad para <a class="btn-pagar"> o <button class="btn-pagar">) */
+.carrito-total {
+  background-color: #f3f3f3;
+  padding: 30px;
+  border-radius: 6px;
+}
+
+/* fila: total y precio */
+.carrito-total .fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* botón pagar: aplica tanto a <a> como a <button> */
+.carrito-total a.btn-pagar,
+.carrito-total button.btn-pagar {
+  display: flex;
+  width: 100%;
+  border: none;
+  background: #000;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 18px;
+  padding: 20px;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  text-decoration: none !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Asegurar que ningún hijo (i, svg, span) muestre subrayado */
+.carrito-total a.btn-pagar *,
+.carrito-total button.btn-pagar * {
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+/* hover / focus / active */
+.carrito-total a.btn-pagar,
+.carrito-total button.btn-pagar:hover {
+  transform: scale(1.03);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.10);
+}
+
+.carrito-total a.btn-pagar:active,
+.carrito-total button.btn-pagar:active {
+  transform: scale(0.998);
+}
+
+.carrito-total a.btn-pagar:focus,
+.carrito-total button.btn-pagar:focus {
+  outline: 3px solid rgba(51,102,255,0.14);
+  outline-offset: 2px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.12);
+}
+
+/* Icono dentro del botón (si usas <i> o <svg>) */
+.carrito-total .btn-pagar i,
+.carrito-total .btn-pagar svg {
+  margin-left: 12px;
+  display: inline-block;
+  vertical-align: middle;
+  pointer-events: none;
+}
+
+/* Mobile: mantener altura táctil cómoda */
+@media (max-width: 900px) {
+  .carrito-total { padding: 20px; }
+  .carrito-total .fila { font-size: 20px; margin-bottom: 12px; }
+  .carrito-total a.btn-pagar,
+  .carrito-total button.btn-pagar {
+    padding: 16px;
+    font-size: 17px;
+    min-height: 48px;
+  }
+}
+
+.switch{
+    margin-right: 40px;
+}
+.switch:hover{
+    background-color: blue;
+}
+
+/* ajustes amistosos: evitar selección accidental */
+.selector-cantidad,
+.selector-cantidad * ,
+.btn-eliminar,
+.btn-eliminar * {
+  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.carrito-item-cantidad { -webkit-user-select: none; user-select: none; }
+
+/* Asegurar que contenido interno no impida colapso */
+.carrito .carrito-item,
+.carrito .carrito-items,
+.carrito .header-carrito,
+.carrito .carrito-total {
+  min-width: 0;
+}
+
+/* SECCION RESPONSIVE
+   -> @media 600px; el bloque móvil principal es para 850px y 600px arriba.
+*/
+@media screen and (max-width: 850px) {
+    .contenedor { display: block; }
+    .contenedor .contenedor-items,
+    .contenedor-items { width: 100% !important; min-width: 0; }
+    .carrito {
+        position: static;
+        flex: 0 0 auto;
+        width: 100% !important;
+        max-width: 100% !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        padding: 16px 0 0 0;
+    }
+
+    /* en móvil no queremos que colapse: forzamos display:block para evitar alertas del linter */
+    .carrito.carrito--hidden {
+      display: none !important;
+    }
+}
+
+/* WhatsApp: burbuja oculta por defecto, visible solo en hover/focus */
+#whatsapp {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+}
+
+/* La burbuja: reglas por defecto */
+#whatsapp .whatsapp-bubble {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+  padding: 6px 12px;
+  color: rgba(0,0,0,.85);
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,.4));
+  transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  box-sizing: border-box;
+}
+
+/* Selector principal: hover */
+#whatsapp:hover .whatsapp-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* === WhatsApp - evitar cuadro azul persistente al hacer clic === */
+/* 1) Mostrar outline solo para usuarios de teclado (focus-visible) */
+#whatsapp a { outline: none; }
+@supports(selector(:focus-visible)) {
+  #whatsapp a:focus { outline: none; }
+  #whatsapp a:focus-visible {
+    outline: 3px solid #318aac;
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+}
+
+/* Mejor: también mostrar cuando el enlace recibe foco visible (teclado) — usa :has() si está disponible */
+@supports(selector(:has(*))) {
+  /* Si el navegador soporta :has(), mostramos la burbuja cuando el <a> interno tenga :focus-visible */
+  #whatsapp:has(a:focus-visible) .whatsapp-bubble {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+/* El enlace solo rodea el icono (sin padding extra) */
+#whatsapp a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+}
+
+/* Aseguramos que el SVG reciba clics */
+#whatsapp svg {
+  width: 80px;
+  height: 80px;
+  pointer-events: auto;
+  display: block;
+}
+
+/* Evitar highlight táctil molesto en móviles */
+#whatsapp a, #whatsapp a * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* FIX definitivo: asegurar visibilidad del icono WhatsApp (círculo verde + símbolo blanco) */
+#whatsapp { z-index: 1000; }
+
+/* Forzar color del círculo (override incluso si el SVG trae fill inline) */
+#whatsapp circle {
+  fill: #25d366 !important;
+}
+
+/* Forzar que currentColor dentro del SVG sea blanco (para que path con fill="currentColor" se vea) */
+#whatsapp svg {
+  color: #ffffff !important;
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+
+/* Por si el path no estuviera usando currentColor, lo forzamos también */
+#whatsapp path {
+  fill: #ffffff !important;
+}
+
+/* ACCESIBILIDAD: focus visible para botones interactivos (teclado)
+   -> añadí a:focus para enlaces que actúan como botones (ej. .btn-pagar)
+*/
+button:focus, .btn-eliminar:focus, .boton-item:focus, .mi-boton:focus, .mi-boton2:focus,
+a:focus, .carrito-total a.btn-pagar:focus, .carrito-total button.btn-pagar:focus {
+  outline: 3px solid #318aac;
+  outline-offset: 2px;
+}
+
+/* -----------------------
+   NUEVO: Ajustes SOLO para MÓVIL EN ORIENTACIÓN VERTICAL (portrait)
+   ----------------------- */
+@media screen and (max-width: 600px) and (orientation: portrait) {
+  /* Hacemos que el menú sea flexible y que sus items se alineen en la misma línea
+     cuando sea posible; si hay wrap, los items estarán centrados verticalmente. */
+  #menu {
+    height: auto;
+    padding: 8px 10px;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1100; /* asegurar que quede por encima de imágenes/banners */
+  }
+
+  /* Convertimos la lista en flex con wrap, para controlar alineamiento */
+  #menu ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  /* Cada li se comporta como inline-flex y centra su contenido verticalmente */
+  #menu ul li {
+    display: inline-flex;
+    align-items: center;
+    height: auto;
+  }
+
+  /* Ajuste para los enlaces dentro del menú (Créditos, Contacto) */
+  #menu ul li a {
+    height: auto;
+    padding: 8px 10px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ajuste específico del botón switch en portrait: menos margin-right y centrado */
+  .switch {
+    margin-right: 0;
+    margin-left: 6px;
+    padding: 8px 10px;
+    border-radius: 36px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    transform: translateY(0); /* asegurar que esté alineado con el texto */
+    position: relative;
+  }
+
+  /* Si el menú ocupa dos filas por el ancho, forzamos que el switch quede cerca de Créditos:
+     buscamos el último LI (presumiblemente el switch) y reducimos el espacio extra. */
+  #menu ul li:last-child {
+    margin-left: 6px;
+  }
+
+  /* Reducir padding de logo en móviles para evitar empujar items hacia abajo */
+  .logo { padding: 10px; max-width: 48px; height: auto; }
+
+  /* Evitar que la banner image suba y tape controles: dar margen inferior al banner para que no interfiera con header */
+  .banner { margin-top: 0; }
+
+  /* Asegurar que el whatsapp no tape el menú cuando esté visible */
+  #whatsapp { right: 12px; bottom: 12px; }
+}
+ 
+/* BLOQUE ADICIONAL: switch debajo de Créditos en portrait */
+
+/* PORTRAIT: Forzar que el botón switch quede DEBAJO de 'Créditos' */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* Usamos grid para controlar columnas/filas del menú */
+  #menu ul {
+    display: grid !important;
+    grid-template-columns: auto auto;
+    grid-auto-rows: auto;
+    gap: 6px;
+    align-items: center;
+    justify-items: start;
+    width: auto;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Créditos - columna 1 fila 1 */
+  #menu ul li:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Contacto (2do li) - columna 2 fila 1 */
+  #menu ul li:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  /* Switch (último li) - debajo de Créditos (columna 1 fila 2) */
+  #menu ul li:last-child {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    margin-left: 0;
+    margin-top: 2px;
+    width: auto;
+  }
+
+  /* Ajustes visuales para el botón switch */
+  .switch {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    margin: 0 !important;
+  }
+}
+
+#menu .logo,
+#menu a.logo img,
+#menu img.logo {
+  /* preserva tamaño y padding original */
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  padding: 30px !important;
+  box-sizing: content-box;
+}
+
+/* Override final para portrait: aplicar padding-left común y quitar padding-left en <a> */
+@media screen and (max-width:600px) and (orientation:portrait) {
+  /* padding-left del UL define el 'x origin' para alineamiento */
+  #menu ul {
+    padding-left: 12px !important; 
+    width: calc(100% - 12px) !important;
+    grid-template-columns: auto 1fr !important;
+    column-gap: 10px !important;
+    row-gap: 4px !important;
+    justify-items: start !important;
+  }
+
+  /* quitar padding-left interno de los enlaces para que arranquen exactamente en padding-left del UL */
+  #menu ul li a {
+    padding-left: 0 !important;
+  }
+
+  /* garantizar que Créditos y switch (colum 1) compartan el mismo inicio X */
+  #menu ul li:nth-child(1) { grid-column: 1; grid-row: 1; justify-self: start; }
+  #menu ul li:last-child { grid-column: 1; grid-row: 2; justify-self: start; }
+
+  /* switch estilo final */
+  .switch {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    min-height: 40px !important;
+    border-radius: 28px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* asegurar que el logo no sea empujado ni redimensionado */
+  .logo { padding: 30px !important; }
+}
+
+/* -----------------------
+   Reglas extra para móvil que ayudan al arrastre (cursor visual)
+   Solo visual, no cambian tamaño del icono.
+*/
+@media screen and (max-width: 850px) {
+  #whatsapp.dragging { cursor: grabbing; touch-action: none; }
+  #whatsapp { -webkit-tap-highlight-color: transparent; }
+
+  /* Evitar que la burbuja cambie de forma inesperadamente: mantener nowrap y un min-width.
+     Además limitar ancho máximo para pantallas pequeñas. */
+  #whatsapp .whatsapp-bubble {
+    white-space: nowrap;
+    min-width: 120px;
+    max-width: calc(100% - 40px);
+  }
+
+  /* Hint (mensaje temporal) */
+  .wa-drag-hint {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 110px;
+    z-index: 2000;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+  .wa-drag-hint.show { opacity: 1; }
+}

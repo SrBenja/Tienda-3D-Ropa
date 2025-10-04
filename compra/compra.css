@@ -1,0 +1,334 @@
+﻿:root{
+  --bg-1: #17584f;
+  --bg-2: #2f7e6e;
+  --card-bg: #ffffff;
+  --accent: #ffbf3b;
+  --accent-contrast: #0b1b17;
+  --accent-2: #f59e3b;
+  --danger: #d43f3f;
+  --danger-contrast: #fff;
+  --text: #222;
+  --muted: #666;
+  --radius: 12px;
+  --gap: 14px;
+  --disabled-bg: #bfbfbf;
+  --focus-color: rgba(13,80,70,0.14);
+  --glass-bg: rgba(255,255,255,0.65);
+
+  /* sombras reutilizables */
+  --shadow-1: 0 8px 20px rgba(10,30,25,0.06);
+  --shadow-2: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+/* reset / base */
+*{ box-sizing: border-box; margin:0; padding:0; font-family: Poppins, system-ui, sans-serif; }
+.sr-only{
+  position:absolute !important;
+  width:1px; height:1px;
+  padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0);
+  white-space:nowrap; border:0;
+}
+
+/* layout */
+body{
+  background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+  color: var(--text);
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:28px 16px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.main-wrap{ width:100%; max-width:1100px; }
+
+/* tarjeta */
+.card{
+  background: linear-gradient(180deg, var(--card-bg), rgba(255,255,255,0.98));
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: var(--gap);
+  box-shadow: var(--shadow-2);
+  border: 1px solid rgba(0,0,0,0.03);
+  position: relative;
+}
+
+.card .page-title{
+  display:block;
+  width:100%;
+  text-align:center;
+  margin: -22px 0 14px;
+  padding: 14px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+  border-radius: 10px;
+  font-size: 1.6rem;
+  color: #0b2b26;
+  font-weight:700;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.card .card-subtitle{ margin-top: 6px; font-size: 1.05rem; color:#3b5450; font-weight: 600; }
+
+.grid-2{ display:flex; gap:22px; align-items:flex-start; }
+.grid-2 > div{ flex:1; min-width:0; }
+
+/* grid-card alineado por arriba para evitar que notas rompan línea visual */
+.grid-card{ display:grid; grid-template-columns: repeat(2,1fr); gap: 10px; align-items: start; margin-top:8px; }
+.grid-card > div{ display:flex; flex-direction:column; }
+.grid-card label{ margin-bottom:6px; }
+
+.card-brand-inline{ display:block; margin-top:6px; color:var(--muted); font-size:0.88rem; line-height:1; }
+#cvcTarjeta{ max-width:140px; }
+
+.inline-selects{ display:flex; gap:8px; margin-top:6px; }
+.inline-selects select{ padding:8px; border-radius:8px; border:1px solid #e6e6e6; background:#fff; }
+
+/* inputs - generalizado para incluir textarea y otros tipos */
+label{ display:block; margin-top:10px; font-size:0.95rem; color:#333; }
+input, textarea, select{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:10px;
+  border:1px solid #e6e6e6;
+  background:#fff;
+  font-size:0.95rem;
+  transition: box-shadow .12s, transform .06s, border-color .12s;
+}
+input:focus, textarea:focus, select:focus{
+  box-shadow: 0 8px 30px var(--focus-color);
+  transform: translateY(-2px);
+  outline: 2px solid rgba(13,80,70,0.06);
+  border-color: rgba(13,80,70,0.14);
+}
+
+/* Remover spinners de inputs número (estética) */
+/* WebKit (Chrome, Edge, Safari) */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+/* Firefox */
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+/* métodos de pago */
+.pay-methods{ display:flex; gap:12px; align-items:center; margin-top:8px; }
+.pay-methods img{ height:34px; display:block; filter: drop-shadow(0 3px 8px rgba(0,0,0,0.06)); }
+
+/* resumen del pedido */
+.order-summary h2{ margin-bottom:8px; }
+#orderItems{ max-height:220px; overflow:auto; padding:8px 4px; border-radius:8px; border:1px dashed rgba(0,0,0,0.04); background: linear-gradient(180deg, rgba(250,250,250,0.6), rgba(255,255,255,0.4)); }
+.order-item{ display:flex; gap:12px; align-items:center; padding:8px 6px; border-bottom:1px solid rgba(0,0,0,0.03); }
+.order-item:last-child{ border-bottom:0; }
+.order-item .name{ flex:1; font-size:0.95rem; }
+.order-item .qty{ width:100px; display:flex; gap:6px; align-items:center; justify-content:flex-end; }
+.order-item input.qty-input{ width:56px; padding:6px; text-align:center; border-radius:6px; border:1px solid #ddd; }
+.order-total{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:1.05rem; }
+
+/* alternar resumen (móvil) */
+.summary-toggle-wrap{ display:none; margin-bottom:8px; }
+.summary-toggle{ background:#fff; border:1px solid #ddd; padding:8px 10px; border-radius:8px; cursor:pointer; }
+.summary-toggle:focus{ outline: 3px solid rgba(0,0,0,0.06); }
+
+/* contenedor de acciones */
+.actions{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  align-items:center;
+  margin: 18px auto 32px;
+  max-width: 720px;
+  padding: 6px;
+}
+
+/* left/right helpers */
+.left-actions{ display:flex; gap:8px; align-items:center; }
+.right-actions{ display:flex; gap:8px; align-items:center; }
+
+/* -------- BOTONES: estilo nuevo, elegante y único -------- */
+button{ padding:12px 18px; border-radius:12px; border: none; cursor:pointer; font-size:1rem; display:inline-flex; gap:10px; align-items:center; justify-content:center; transition: transform .14s ease, box-shadow .14s ease, opacity .12s ease; position:relative; }
+
+/* base visual para botones (reusables) */
+.btn {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  will-change: transform, box-shadow;
+  box-shadow: var(--shadow-1);
+}
+
+/* confirmar primario */
+.btn-confirmarpago {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  color: var(--accent-contrast);
+  border-radius: 999px;
+  padding: 14px 20px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.16);
+  transform: translateY(0);
+}
+.btn-confirmarpago:hover{ transform: translateY(-4px) scale(1.01); box-shadow: 0 18px 40px rgba(0,0,0,0.18); }
+.btn-confirmarpago:active{ transform: translateY(-1px) scale(.995); }
+.btn-confirmarpago:focus{ outline: 3px solid rgba(255,191,59,0.12); }
+
+/* estado de procesamiento */
+.btn-confirmarpago[disabled]{
+  cursor: not-allowed;
+  opacity: 0.9;
+  filter: grayscale(.05) brightness(.98);
+  transform: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* cancel generic (no usado si elegimos la versión destructiva) */
+.btn-cancelarpago {
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.45));
+  border: 1px solid rgba(13,80,70,0.10);
+  color: rgba(5,30,28,0.9);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight:600;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* cancel destructive — rojo elegante */
+/* fallback para color-mix en navegadores sin soporte */
+.btn-cancelarpago--danger {
+  background: linear-gradient(180deg, var(--danger), #7a0000);
+  background: linear-gradient(180deg, var(--danger), color-mix(in srgb, var(--danger) 85%, #7a0000 15%));
+  color: var(--danger-contrast);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 26px rgba(212,63,63,0.14);
+  padding: 12px 14px;
+  font-weight:700;
+  border-radius: 12px;
+}
+.btn-cancelarpago--danger:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(212,63,63,0.18); }
+.btn-cancelarpago--danger:focus { outline: 3px solid rgba(212,63,63,0.12); }
+
+/* pequeños estilos de iconos dentro del botón */
+.btn svg{ width:18px; height:18px; display:block; flex: 0 0 18px; }
+
+/* texto dentro de botones separados */
+.btn-text{ display:inline-block; vertical-align:middle; }
+
+/* acento decorativo al confirmar */
+.btn-confirmarpago::after{
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  width: 64px;
+  height: 64px;
+  right: -22px;
+  top: -12px;
+  transform: rotate(18deg);
+  background: radial-gradient(closest-side, rgba(255,255,255,0.06), transparent 60%);
+  border-radius: 20px;
+  mix-blend-mode: overlay;
+}
+
+/* Los botones emergentes mantienen el aspecto existente pero con un estilo ligeramente diferente. */
+.popup button, .popup-cancel button{ border-radius:8px; padding:10px 16px; font-weight:700; }
+
+/* validación helpers */
+input.textBien { background:#dff7ef; }
+input.textMal { background:#ffdfe1; border:1px solid #e06a6a; }
+select.textBien { background:#dff7ef; }
+select.textMal { background:#ffdfe1; border:1px solid #e06a6a; }
+span.alertTipoDeTarjeta { color:var(--danger); }
+
+/* popup */
+.popup, .popup-cancel{
+  position: fixed;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%) scale(0.97);
+  width: 360px;
+  max-width: 92%;
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,0.3);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .25s, visibility .25s, transform .25s;
+  z-index: 9999;
+}
+.popup img, .popup-cancel img{ width:80px; height:80px; border-radius:50%; margin-top:-50px; box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
+.popup h2, .popup-cancel h2{ margin-top:8px; font-size:1.4rem; }
+.popup p, .popup-cancel p{ margin:10px 0 18px; color:#444; }
+.popup-actions{ margin-top:10px; display:flex; gap:8px; justify-content:center; }
+.popup button#popupAccept{ background:#00b36b; color:#fff; }
+.popup-cancel button#popupCancelAccept{ background:var(--danger); color:#fff; }
+.popup.open, .popup-cancel.open{ visibility: visible; opacity: 1; transform: translate(-50%,-50%) scale(1); }
+
+/* modal overlay para bloquear fondo y capturar clics */
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .2s ease, visibility .2s ease;
+}
+.modal-overlay.open{ opacity: 1; visibility: visible; }
+
+/* responsive: el contenedor de acciones sigue centrado en móvil también */
+@media (max-width:720px){
+  .grid-2{ flex-direction:column; }
+  .grid-card{ grid-template-columns: 1fr; }
+  .card .page-title { font-size: 1.45rem; margin-bottom:10px; margin-top: -8px; padding:10px; }
+  .right-actions{ width:100%; justify-content:space-between; }
+
+  .summary-toggle-wrap{ display:block; }
+
+  /* acciones centradas y con layout vertical en pantallas muy pequeñas */
+  .actions{
+    flex-direction: row;
+    gap: 10px;
+    padding: 0 8px;
+    margin-bottom: 20px;
+  }
+
+  .btn-cancelarpago--danger{ padding: 10px 12px; }
+  .btn-confirmarpago{ padding: 12px 16px; }
+
+  #orderSummary.collapsed{ display:none; }
+}
+
+/* pequeñas utilidades */
+.small-muted{ color:var(--muted); font-size:0.92rem; }
+.muted{ color:var(--muted); }
+
+/* focus visible: mejor experiencia para teclado */
+:focus { outline: none; }
+:focus-visible { outline: 3px solid rgba(13,80,70,0.12); outline-offset: 2px; }
+
+/* mejora visual al enfocar los botones principales */
+.btn-confirmarpago:focus-visible,
+.btn-confirmarpago:focus {
+  outline: 3px solid rgba(255,191,59,0.25);
+  outline-offset: 3px;
+  box-shadow:
+    0 20px 48px rgba(0,0,0,0.18),
+    0 0 0 6px rgba(255,191,59,0.08);
+  transform: translateY(-4px) scale(1.015);
+}
+
+.btn-cancelarpago--danger:focus-visible,
+.btn-cancelarpago--danger:focus {
+  outline: 3px solid rgba(212,63,63,0.18);
+  outline-offset: 3px;
+  box-shadow:
+    0 16px 40px rgba(212,63,63,0.18),
+    0 0 0 6px rgba(212,63,63,0.06);
+  transform: translateY(-3px) scale(1.005);
+}
+
+/* prefers-reduced-motion: respetar usuarios que piden menos movimiento */
+@media (prefers-reduced-motion: reduce){
+  * { transition: none !important; animation: none !important; }
+}

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Formulario de devolución</title>
+
+  <link rel="stylesheet" href="devolucion.css" />
+  <!-- ahora solo cargamos nuestro JS local (no hay CDN) -->
+  <script src="devolucion.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>Formulario de devolución</h1>
+      <p class="lead">Introduzca los mismos datos que ingresó en el pago y detalle el motivo de devolución.</p>
+    </header>
+
+    <form id="devolucionForm" class="form-grid" novalidate>
+      <!-- Left column -->
+      <section class="card" aria-labelledby="datosPersonalesTitle">
+        <h2 id="datosPersonalesTitle" class="card-title">Datos personales</h2>
+
+        <label for="nombre">Nombre completo <span aria-hidden="true">*</span></label>
+        <input id="nombre" name="nombre" type="text" inputmode="text" autocomplete="name" required aria-describedby="error-nombre" />
+        <span id="error-nombre" class="field-error" role="alert" aria-live="polite" hidden></span>
+
+        <label for="apellido">Apellido completo <span aria-hidden="true">*</span></label>
+        <input id="apellido" name="apellido" type="text" inputmode="text" autocomplete="family-name" required aria-describedby="error-apellido" />
+        <span id="error-apellido" class="field-error" role="alert" aria-live="polite" hidden></span>
+
+        <label for="dni">DNI (solo números) <span aria-hidden="true">*</span></label>
+        <input id="dni" name="dni" type="text" inputmode="numeric" maxlength="12" placeholder="Ej. 12345678" required aria-describedby="error-dni" />
+        <span id="error-dni" class="field-error" role="alert" aria-live="polite" hidden></span>
+
+        <label for="movil">Teléfono móvil <span aria-hidden="true">*</span></label>
+        <input id="movil" name="movil" type="tel" inputmode="tel" maxlength="20" placeholder="Ej. 11 1111 1111" required aria-describedby="error-movil" />
+        <span id="error-movil" class="field-error" role="alert" aria-live="polite" hidden></span>
+
+        <label for="mail">E-mail de contacto <span aria-hidden="true">*</span></label>
+        <input id="mail" name="mail" type="email" autocomplete="email" placeholder="micorreo@gmail.com" required aria-describedby="error-mail" />
+        <span id="error-mail" class="field-error" role="alert" aria-live="polite" hidden></span>
+      </section>
+
+      <!-- Right column -->
+      <section class="card" aria-labelledby="datosCompraTitle">
+        <h2 id="datosCompraTitle" class="card-title">Datos de la compra y devolución</h2>
+
+        <label for="localidad">Localidad</label>
+        <input id="localidad" name="localidad" type="text" inputmode="text" />
+
+        <label for="codigoPostal">Código postal</label>
+        <input id="codigoPostal" name="codigoPostal" type="text" inputmode="numeric" maxlength="10" />
+
+        <label for="provincia">Provincia</label>
+        <select id="provincia" name="provincia" autocomplete="address-level1">
+          <option value="">Seleccione...</option>
+          <option>Ciudad Autónoma de Buenos Aires</option>
+          <option>Buenos Aires</option>
+          <option>Catamarca</option>
+          <option>Chaco</option>
+          <option>Chubut</option>
+          <option>Córdoba</option>
+          <option>Corrientes</option>
+          <option>Entre Ríos</option>
+          <option>Formosa</option>
+          <option>Jujuy</option>
+          <option>La Pampa</option>
+          <option>La Rioja</option>
+          <option>Mendoza</option>
+          <option>Misiones</option>
+          <option>Neuquén</option>
+          <option>Río Negro</option>
+          <option>Salta</option>
+          <option>San Juan</option>
+          <option>San Luis</option>
+          <option>Santa Cruz</option>
+          <option>Santa Fe</option>
+          <option>Santiago del Estero</option>
+          <option>Tierra del Fuego</option>
+        </select>
+
+        <label for="fechaCompra">Fecha de compra</label>
+        <input id="fechaCompra" name="fechaCompra" type="date" />
+
+        <label for="motivo">Motivo detallado de la devolución <span aria-hidden="true">*</span></label>
+        <textarea id="motivo" name="motivo" rows="6" placeholder="Escribe tu mensaje..." required aria-describedby="error-motivo"></textarea>
+        <span id="error-motivo" class="field-error" role="alert" aria-live="polite" hidden></span>
+      </section>
+
+      <!-- visible status area (muestra mensajes de error breves) -->
+      <div id="formStatus" class="form-status" role="status" aria-live="polite" aria-atomic="true"></div>
+
+      <!-- actions: botones juntos -->
+      <div class="actions" role="group" aria-label="Acciones del formulario">
+        <button type="button" id="btnCancelar" class="btn btn-cancel">Cancelar</button>
+        <button type="button" id="btnEnviar" class="btn btn-send">Enviar</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Popup éxito (SVG inline) -->
+  <div id="popupSuccess" class="popup" role="dialog" aria-modal="true" aria-labelledby="popupSuccessTitle" aria-hidden="true">
+    <div class="popup-graphic" aria-hidden="true">
+      <svg width="84" height="84" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="32" cy="32" r="32" fill="#E6FAEF"/>
+        <path d="M18 34.5L28 44L46 22" stroke="#1AA260" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 id="popupSuccessTitle">¡Solicitud enviada!</h2>
+    <p>Hemos recibido su pedido de devolución. En breve nos pondremos en contacto para confirmar los pasos a seguir.</p>
+    <div class="popup-actions">
+      <button id="acceptSuccess" class="btn btn-ok">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Popup cancelación -->
+  <div id="popupCancel" class="popup popup-cancel" role="dialog" aria-modal="true" aria-labelledby="popupCancelTitle" aria-hidden="true">
+    <div class="popup-graphic" aria-hidden="true">
+      <svg width="84" height="84" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="32" cy="32" r="32" fill="#FFECEC"/>
+        <path d="M20 20L44 44M44 20L20 44" stroke="#C92B2B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 id="popupCancelTitle">Devolución cancelada</h2>
+    <p>¡Ha cancelado! Será redirigido/a al inicio.</p>
+    <div class="popup-actions">
+      <button id="acceptCancel" class="btn btn-ok">Aceptar</button>
+    </div>
+  </div>
+</body>
+</html>
