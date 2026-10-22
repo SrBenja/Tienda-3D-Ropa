@@ -1,1 +1,9 @@
-Tienda demo de ropa 3D - Proyecto demo: catálogo de ropa responsivo con carrito de compras, persistencia local (localStorage), soporte para modo oscuro y enfoque en accesibilidad (a11y). Ideal para mostrar habilidades en HTML5, CSS3 (media queries), JavaScript (DOM, manejo de estado) y despliegue web. Visite la página mediante este enlace: https://srbenja.github.io/Tienda-3D-Ropa/ o hágalo manualmente dando clic en «github-pages» y luego al enlace.
+Tienda de ropa 3D es un proyecto personal de desarrollo web que recrea una tienda virtual de demostración, desarrollado con HTML5, CSS3 y JavaScript.
+
+Incluye un catálogo de productos, carrito de compras interactivo con cálculo automático de importes, simulación del proceso de compra, diseño adaptable a diferentes dispositivos, modos claro y oscuro, animaciones y funcionalidades de accesibilidad.
+
+El proyecto permite poner en práctica conocimientos de manipulación del DOM, gestión de eventos, validación de formularios, diseño responsivo y almacenamiento local de preferencias visuales mediante localStorage.
+
+La aplicación está disponible públicamente a través de GitHub Pages:
+
+https://srbenja.github.io/Tienda-3D-Ropa/
